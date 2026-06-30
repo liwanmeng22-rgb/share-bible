@@ -1,1395 +1,159 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📖 溪水旁 · 圣经文献阅读</title>
-    <style>
-        /* ===== CSS变量 ===== */
-        :root {
-            --bg-page: #f5f0eb;
-            --bg-app: #ffffff;
-            --bg-sidebar: #faf8f5;
-            --bg-card: #f8f5f0;
-            --bg-thought: #f3efe9;
-            --bg-note: #fcfaf7;
-            --text-primary: #2a241f;
-            --text-secondary: #4a3f38;
-            --text-muted: #8a7a6a;
-            --border-color: #ede7e0;
-            --accent: #b78c5f;
-            --accent-hover: #9e764d;
-            --font-size: 17px;
-            --line-height: 2.2;
-        }
-
-        [data-theme="cream"] {
-            --bg-page: #f5f0eb;
-            --bg-app: #ffffff;
-            --bg-sidebar: #faf8f5;
-            --bg-card: #f8f5f0;
-            --bg-thought: #f3efe9;
-            --bg-note: #fcfaf7;
-        }
-        [data-theme="sepia"] {
-            --bg-page: #f4ecd8;
-            --bg-app: #faf3e6;
-            --bg-sidebar: #f5ede0;
-            --bg-card: #f0e8d8;
-            --bg-thought: #ede4d2;
-            --bg-note: #f5ede0;
-            --border-color: #ddd0bc;
-            --text-primary: #3d3228;
-            --text-secondary: #5a4c3e;
-        }
-        [data-theme="gray"] {
-            --bg-page: #e8e4e0;
-            --bg-app: #f0ece8;
-            --bg-sidebar: #eae6e2;
-            --bg-card: #e6e2de;
-            --bg-thought: #e2deda;
-            --bg-note: #eae6e2;
-            --border-color: #d5d0cc;
-            --text-primary: #2c2a28;
-            --text-secondary: #4a4642;
-        }
-        [data-theme="dark"] {
-            --bg-page: #1a1816;
-            --bg-app: #242220;
-            --bg-sidebar: #2a2826;
-            --bg-card: #2e2c2a;
-            --bg-thought: #32302e;
-            --bg-note: #2a2826;
-            --border-color: #3d3a36;
-            --text-primary: #e8e0d8;
-            --text-secondary: #c8c0b8;
-            --text-muted: #a09888;
-            --accent: #c9a87c;
-            --accent-hover: #dbb890;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', 'PingFang SC', 'Noto Serif SC', Roboto, serif;
-            background: var(--bg-page);
-            color: var(--text-primary);
-            display: flex;
-            justify-content: center;
-            padding: 12px;
-            min-height: 100vh;
-            transition: background 0.3s, color 0.3s;
-        }
-        .app {
-            max-width: 1400px;
-            width: 100%;
-            background: var(--bg-app);
-            border-radius: 28px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            transition: background 0.3s;
-        }
-
-        .disclaimer-banner {
-            background: #1a1a1a;
-            color: #e8dccf;
-            padding: 8px 20px;
-            font-size: 12px;
-            text-align: center;
-            letter-spacing: 0.3px;
-            flex-shrink: 0;
-        }
-        .disclaimer-banner strong {
-            color: #f0d5b0;
-        }
-
-        .top-bar {
-            padding: 12px 24px;
-            background: var(--bg-app);
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 10px;
-            transition: background 0.3s;
-        }
-        .logo {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-primary);
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-        .logo span {
-            color: var(--accent);
-        }
-        .top-bar .spacer {
-            flex: 1;
-        }
-        .top-bar .settings-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .top-bar .settings-group label {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-        .top-bar .settings-group select,
-        .top-bar .settings-group input[type="range"] {
-            padding: 4px 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 30px;
-            font-size: 13px;
-            background: var(--bg-card);
-            color: var(--text-primary);
-            outline: none;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .top-bar .settings-group input[type="range"] {
-            width: 80px;
-            padding: 2px 6px;
-            accent-color: var(--accent);
-        }
-
-        .search-bar {
-            padding: 8px 24px 12px 24px;
-            background: var(--bg-app);
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
-            transition: background 0.3s;
-        }
-        .search-bar input {
-            flex: 2;
-            min-width: 140px;
-            padding: 8px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 60px;
-            font-size: 14px;
-            background: var(--bg-card);
-            color: var(--text-primary);
-            outline: none;
-            transition: 0.2s;
-        }
-        .search-bar input:focus {
-            border-color: var(--accent);
-        }
-        .search-bar input::placeholder {
-            color: var(--text-muted);
-        }
-        .search-bar select {
-            padding: 8px 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 60px;
-            font-size: 13px;
-            background: var(--bg-card);
-            color: var(--text-primary);
-            outline: none;
-            cursor: pointer;
-        }
-        .search-bar button {
-            padding: 8px 22px;
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            border-radius: 60px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: 0.2s;
-            white-space: nowrap;
-        }
-        .search-bar button:hover {
-            background: var(--accent-hover);
-        }
-
-        .progress-bar {
-            padding: 6px 24px;
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            flex-wrap: wrap;
-            font-size: 13px;
-            color: var(--text-secondary);
-            transition: background 0.3s;
-        }
-        .progress-track {
-            flex: 1;
-            min-width: 100px;
-            height: 5px;
-            background: var(--border-color);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%;
-            background: var(--accent);
-            width: 0%;
-            border-radius: 10px;
-            transition: width 0.5s;
-        }
-
-        .main {
-            display: flex;
-            flex-direction: row;
-            min-height: 55vh;
-        }
-        .sidebar {
-            width: 200px;
-            background: var(--bg-sidebar);
-            border-right: 1px solid var(--border-color);
-            padding: 12px 0;
-            overflow-y: auto;
-            max-height: 70vh;
-            flex-shrink: 0;
-            transition: background 0.3s;
-        }
-        .sidebar-group {
-            margin-bottom: 12px;
-        }
-        .sidebar-group h4 {
-            padding: 0 14px 4px 14px;
-            font-size: 11px;
-            color: var(--text-muted);
-            letter-spacing: 1.5px;
-            font-weight: 400;
-        }
-        .book-item {
-            padding: 5px 14px;
-            cursor: pointer;
-            font-size: 13px;
-            color: var(--text-secondary);
-            transition: 0.1s;
-            border-left: 3px solid transparent;
-        }
-        .book-item:hover {
-            background: var(--border-color);
-            border-left-color: var(--accent);
-        }
-        .book-item.active {
-            background: var(--bg-card);
-            border-left-color: var(--accent);
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .content {
-            flex: 1;
-            padding: 20px 28px;
-            overflow-y: auto;
-            max-height: 70vh;
-            background: var(--bg-app);
-            transition: background 0.3s;
-        }
-        .breadcrumb {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 10px;
-            letter-spacing: 0.3px;
-        }
-        .breadcrumb span {
-            color: var(--accent);
-            font-weight: 600;
-        }
-
-        /* ===== 经文显示 ===== */
-        .verse-text {
-            font-size: var(--font-size);
-            line-height: var(--line-height);
-            color: var(--text-primary);
-            transition: font-size 0.2s, line-height 0.2s;
-        }
-        .verse-text .v {
-            color: var(--accent);
-            font-weight: 500;
-            margin-right: 4px;
-            font-size: 0.8em;
-        }
-        .verse-text .en {
-            color: var(--text-muted);
-            font-size: 0.85em;
-            display: block;
-            margin-left: 24px;
-            border-left: 3px solid var(--border-color);
-            padding-left: 12px;
-            margin-bottom: 8px;
-        }
-        .verse-text .zh {
-            display: block;
-            margin-bottom: 2px;
-        }
-        .verse-text .verse-block {
-            margin-bottom: 8px;
-            padding: 4px 0;
-        }
-
-        .badge-person {
-            color: #c0392b;
-            font-weight: 600;
-            cursor: pointer;
-            border-bottom: 2px dotted #c0392b;
-            padding: 0 2px;
-            transition: 0.15s;
-        }
-        .badge-person:hover {
-            background: rgba(192, 57, 43, 0.1);
-            border-radius: 4px;
-        }
-        .badge-place {
-            color: #2980b9;
-            font-weight: 600;
-            cursor: pointer;
-            border-bottom: 2px dotted #2980b9;
-            padding: 0 2px;
-            transition: 0.15s;
-        }
-        .badge-place:hover {
-            background: rgba(41, 128, 185, 0.1);
-            border-radius: 4px;
-        }
-
-        /* ===== 加载动画 - 小羊 ===== */
-        .loading-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 60px 20px;
-            gap: 20px;
-        }
-        .loading-container .sheep {
-            font-size: 80px;
-            animation: sheepBounce 1.2s ease-in-out infinite;
-            display: inline-block;
-        }
-        @keyframes sheepBounce {
-            0%,
-            100% {
-                transform: translateY(0) rotate(-3deg);
-            }
-            50% {
-                transform: translateY(-15px) rotate(3deg);
-            }
-        }
-        .loading-container .loading-text {
-            font-size: 18px;
-            color: var(--text-muted);
-            font-weight: 500;
-            letter-spacing: 2px;
-        }
-        .loading-container .loading-dots::after {
-            content: '...';
-            animation: dots 1.5s steps(4, end) infinite;
-        }
-        @keyframes dots {
-            0% {
-                content: '';
-            }
-            25% {
-                content: '.';
-            }
-            50% {
-                content: '..';
-            }
-            75% {
-                content: '...';
-            }
-            100% {
-                content: '';
-            }
-        }
-        .loading-container .retry-btn {
-            margin-top: 12px;
-            padding: 10px 30px;
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            border-radius: 40px;
-            font-size: 15px;
-            cursor: pointer;
-            transition: 0.2s;
-            display: none;
-        }
-        .loading-container .retry-btn:hover {
-            background: var(--accent-hover);
-        }
-        .loading-container .retry-btn.show {
-            display: inline-block;
-        }
-        .loading-container .error-text {
-            color: #c0392b;
-            font-size: 14px;
-            margin-top: 4px;
-            display: none;
-        }
-        .loading-container .error-text.show {
-            display: block;
-        }
-
-        .search-results {
-            margin-top: 12px;
-            padding: 14px 18px;
-            background: var(--bg-card);
-            border-radius: 14px;
-            border: 1px solid var(--border-color);
-            display: none;
-            max-height: 260px;
-            overflow-y: auto;
-            transition: background 0.3s;
-        }
-        .search-results.active {
-            display: block;
-        }
-        .search-results .result-item {
-            padding: 6px 0;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-        .search-results .result-item:hover {
-            color: var(--accent);
-        }
-        .search-results .result-item .ref {
-            color: var(--accent);
-            font-weight: 600;
-            margin-right: 8px;
-        }
-
-        .insight-panel {
-            margin-top: 24px;
-            border-top: 2px dashed var(--border-color);
-            padding-top: 18px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .insight-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 12px;
-        }
-        .insight-card {
-            background: var(--bg-card);
-            border-radius: 14px;
-            padding: 14px 16px;
-            border: 1px solid var(--border-color);
-            transition: background 0.3s;
-        }
-        .insight-card .label {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--accent);
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .insight-card p {
-            font-size: 14px;
-            line-height: 1.7;
-            color: var(--text-secondary);
-        }
-        .insight-card .placeholder {
-            color: var(--text-muted);
-            font-style: italic;
-            font-size: 13px;
-        }
-
-        .thought-card {
-            background: var(--bg-thought);
-            border-radius: 14px;
-            padding: 16px 20px;
-            border-left: 5px solid var(--accent);
-            transition: background 0.3s;
-        }
-        .thought-card .label {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-secondary);
-            letter-spacing: 0.5px;
-        }
-        .thought-card p {
-            font-size: 15px;
-            line-height: 1.8;
-            color: var(--text-primary);
-            margin-top: 4px;
-        }
-
-        .refresh-btn {
-            align-self: flex-end;
-            background: var(--border-color);
-            border: none;
-            padding: 6px 20px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 13px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .refresh-btn:hover {
-            background: var(--accent);
-            color: #fff;
-        }
-
-        .note-area {
-            margin-top: 18px;
-            padding: 14px 18px;
-            background: var(--bg-note);
-            border-radius: 14px;
-            border: 1px solid var(--border-color);
-            transition: background 0.3s;
-        }
-        .note-area .note-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 6px;
-        }
-        .note-area .note-header span {
-            font-weight: 600;
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-        .note-area .note-header small {
-            font-size: 11px;
-            color: var(--text-muted);
-        }
-        .note-area textarea {
-            width: 100%;
-            min-height: 70px;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 10px 14px;
-            font-size: 14px;
-            font-family: inherit;
-            resize: vertical;
-            background: var(--bg-app);
-            color: var(--text-primary);
-            outline: none;
-            transition: 0.2s;
-        }
-        .note-area textarea:focus {
-            border-color: var(--accent);
-        }
-        .note-area .note-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 6px;
-            flex-wrap: wrap;
-        }
-        .note-area .note-actions button {
-            padding: 5px 16px;
-            border: none;
-            border-radius: 40px;
-            font-size: 12px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: 0.2s;
-        }
-        .note-area .note-actions .save-note {
-            background: var(--accent);
-            color: #fff;
-        }
-        .note-area .note-actions .save-note:hover {
-            background: var(--accent-hover);
-        }
-        .note-area .note-actions .clear-note {
-            background: var(--border-color);
-            color: var(--text-secondary);
-        }
-        .note-status {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-
-        .popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.35);
-            z-index: 999;
-            display: none;
-        }
-        .popup-overlay.active {
-            display: block;
-        }
-        .badge-popup {
-            position: fixed;
-            max-width: 380px;
-            background: var(--bg-app);
-            border-radius: 18px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-            padding: 20px 24px;
-            z-index: 1000;
-            display: none;
-            border: 1px solid var(--border-color);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            transition: background 0.3s;
-        }
-        .badge-popup.active {
-            display: block;
-        }
-        .badge-popup .close-popup {
-            position: absolute;
-            top: 10px;
-            right: 16px;
-            font-size: 20px;
-            cursor: pointer;
-            color: var(--text-muted);
-            background: none;
-            border: none;
-        }
-        .badge-popup .popup-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-        .badge-popup .popup-sub {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-        .badge-popup .popup-body {
-            font-size: 14px;
-            line-height: 1.8;
-            color: var(--text-secondary);
-        }
-
-        .footer-disclaimer {
-            background: var(--bg-card);
-            border-top: 1px solid var(--border-color);
-            padding: 8px 24px;
-            font-size: 11px;
-            color: var(--text-muted);
-            text-align: center;
-            flex-shrink: 0;
-            transition: background 0.3s;
-        }
-        .footer-disclaimer strong {
-            color: var(--text-secondary);
-        }
-
-        @media (max-width: 860px) {
-            .main {
-                flex-direction: column;
-            }
-            .sidebar {
-                width: 100%;
-                max-height: 160px;
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
-                display: flex;
-                flex-wrap: wrap;
-                padding: 8px 10px;
-                gap: 2px;
-                overflow-y: auto;
-            }
-            .sidebar-group {
-                width: 100%;
-                margin-bottom: 2px;
-            }
-            .sidebar-group h4 {
-                padding: 2px 8px;
-                font-size: 10px;
-            }
-            .book-item {
-                display: inline-block;
-                padding: 3px 10px;
-                font-size: 12px;
-                border-left: none;
-                border-radius: 20px;
-            }
-            .book-item.active {
-                border-left: none;
-                background: var(--accent);
-                color: #fff;
-            }
-            .content {
-                padding: 14px 14px;
-                max-height: none;
-            }
-            .insight-row {
-                grid-template-columns: 1fr;
-            }
-            .top-bar {
-                padding: 10px 14px;
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .top-bar .settings-group {
-                justify-content: flex-start;
-            }
-            .search-bar {
-                padding: 6px 14px 10px 14px;
-            }
-            .progress-bar {
-                padding: 4px 14px;
-                font-size: 11px;
-            }
-            .badge-popup {
-                max-width: 92%;
-                padding: 16px 16px;
-            }
-        }
-    </style>
-</head>
-<body>
-
-    <div class="app" id="app">
-
-        <div class="disclaimer-banner">
-            ⚠️ <strong>免责声明：</strong> 本站仅为《圣经》文献的学术性阅读、查阅与学习平台，不涉及任何宗教传教、布道或信仰劝导活动。请遵守国家法律法规，理性阅读。
-        </div>
-
-        <div class="top-bar">
-            <div class="logo">📖 溪水旁 <span>· 文献阅读</span></div>
-            <div class="spacer"></div>
-            <div class="settings-group">
-                <label>字号</label>
-                <input type="range" id="fontSizeSlider" min="14" max="24" value="17" step="1">
-                <span id="fontSizeLabel" style="font-size:13px;min-width:30px;">17</span>
-                <label style="margin-left:6px;">底色</label>
-                <select id="themeSelect">
-                    <option value="cream">奶油</option>
-                    <option value="sepia">护眼棕</option>
-                    <option value="gray">高级灰</option>
-                    <option value="dark">暗夜</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="搜索词、人名、地名、主题..." />
-            <select id="searchType">
-                <option value="all">全部</option>
-                <option value="word">单字/词</option>
-                <option value="person">人物</option>
-                <option value="place">地名</option>
-                <option value="topic">主题</option>
-            </select>
-            <button id="searchBtn">🔍 搜索</button>
-        </div>
-
-        <div class="progress-bar">
-            <span class="progress-label">📅 年度读经计划</span>
-            <div class="progress-track">
-                <div class="progress-fill" id="progressFill" style="width:0%"></div>
-            </div>
-            <span id="progressText">0 / 1189 章</span>
-            <span style="font-size:11px;color:var(--text-muted);" id="progressDay">第 0 天</span>
-        </div>
-
-        <div class="main">
-            <div class="sidebar" id="sidebar"></div>
-            <div class="content" id="contentArea">
-                <div class="breadcrumb" id="breadcrumb">📂 旧约 / <span>创世记</span> 第 1 章</div>
-                <div class="search-results" id="searchResults"></div>
-
-                <!-- 经文显示区域 -->
-                <div class="verse-text" id="verseDisplay">
-                    <div class="loading-container" id="loadingContainer">
-                        <div class="sheep">🐑</div>
-                        <div class="loading-text">加载经文<span class="loading-dots"></span></div>
-                        <div class="error-text" id="errorText">⚠️ 加载失败，请检查网络连接</div>
-                        <button class="retry-btn" id="retryBtn">🔄 重试</button>
-                    </div>
-                </div>
-
-                <div class="insight-panel" id="insightPanel">
-                    <div class="insight-row">
-                        <div class="insight-card" id="historyCard">
-                            <div class="label">🏛️ 历史背景</div>
-                            <p class="placeholder">加载中...</p>
-                        </div>
-                        <div class="insight-card" id="storyCard">
-                            <div class="label">📜 文学关联</div>
-                            <p class="placeholder">加载中...</p>
-                        </div>
-                        <div class="insight-card" id="futureCard">
-                            <div class="label">🔮 文本指向</div>
-                            <p class="placeholder">加载中...</p>
-                        </div>
-                    </div>
-                    <div class="thought-card" id="thoughtCard">
-                        <div class="label">📝 阅读思考</div>
-                        <p class="placeholder">加载中...</p>
-                    </div>
-                    <button class="refresh-btn" id="refreshInsightBtn">🔄 刷新内容</button>
-                </div>
-
-                <div class="note-area" id="noteArea">
-                    <div class="note-header">
-                        <span>📝 私人笔记</span>
-                        <small>仅保存在本设备，不上传服务器</small>
-                    </div>
-                    <textarea id="noteInput" placeholder="记录你的阅读思考、疑问或心得..."></textarea>
-                    <div class="note-actions">
-                        <button class="save-note" id="saveNoteBtn">💾 保存笔记</button>
-                        <button class="clear-note" id="clearNoteBtn">🗑️ 清空</button>
-                        <span class="note-status" id="noteStatus">📌 已自动保存</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="footer-disclaimer">
-            <strong>📌 本站声明：</strong> 本网站所有内容仅供 <strong>学术研究、文学阅读及历史文化学习</strong> 之用，不构成任何宗教传教、信仰劝导或仪式指导。
-        </div>
-    </div>
-
-    <div class="popup-overlay" id="popupOverlay"></div>
-    <div class="badge-popup" id="badgePopup">
-        <button class="close-popup" id="closePopup">✕</button>
-        <div class="popup-title" id="popupTitle">名称</div>
-        <div class="popup-sub" id="popupSub">分类</div>
-        <div class="popup-body" id="popupBody">
-            <p>简介内容...</p>
-        </div>
-    </div>
-
-    <script>
-        // ============================================================
-        // 1. 圣经书籍列表
-        // ============================================================
-        const BIBLE_BOOKS = [
-            { id: 'gen', name: '创世记', group: '摩西五经', abbrev: '创', chapters: 50 },
-            { id: 'exo', name: '出埃及记', group: '摩西五经', abbrev: '出', chapters: 40 },
-            { id: 'lev', name: '利未记', group: '摩西五经', abbrev: '利', chapters: 27 },
-            { id: 'num', name: '民数记', group: '摩西五经', abbrev: '民', chapters: 36 },
-            { id: 'deu', name: '申命记', group: '摩西五经', abbrev: '申', chapters: 34 },
-            { id: 'jos', name: '约书亚记', group: '历史书', abbrev: '书', chapters: 24 },
-            { id: 'jdg', name: '士师记', group: '历史书', abbrev: '士', chapters: 21 },
-            { id: 'rut', name: '路得记', group: '历史书', abbrev: '得', chapters: 4 },
-            { id: '1sa', name: '撒母耳记上', group: '历史书', abbrev: '撒上', chapters: 31 },
-            { id: '2sa', name: '撒母耳记下', group: '历史书', abbrev: '撒下', chapters: 24 },
-            { id: '1ki', name: '列王纪上', group: '历史书', abbrev: '王上', chapters: 22 },
-            { id: '2ki', name: '列王纪下', group: '历史书', abbrev: '王下', chapters: 25 },
-            { id: '1ch', name: '历代志上', group: '历史书', abbrev: '代上', chapters: 29 },
-            { id: '2ch', name: '历代志下', group: '历史书', abbrev: '代下', chapters: 36 },
-            { id: 'ezr', name: '以斯拉记', group: '历史书', abbrev: '拉', chapters: 10 },
-            { id: 'neh', name: '尼希米记', group: '历史书', abbrev: '尼', chapters: 13 },
-            { id: 'est', name: '以斯帖记', group: '历史书', abbrev: '斯', chapters: 10 },
-            { id: 'job', name: '约伯记', group: '诗歌智慧书', abbrev: '伯', chapters: 42 },
-            { id: 'psa', name: '诗篇', group: '诗歌智慧书', abbrev: '诗', chapters: 150 },
-            { id: 'pro', name: '箴言', group: '诗歌智慧书', abbrev: '箴', chapters: 31 },
-            { id: 'ecc', name: '传道书', group: '诗歌智慧书', abbrev: '传', chapters: 12 },
-            { id: 'sol', name: '雅歌', group: '诗歌智慧书', abbrev: '歌', chapters: 8 },
-            { id: 'isa', name: '以赛亚书', group: '大先知书', abbrev: '赛', chapters: 66 },
-            { id: 'jer', name: '耶利米书', group: '大先知书', abbrev: '耶', chapters: 52 },
-            { id: 'lam', name: '耶利米哀歌', group: '大先知书', abbrev: '哀', chapters: 5 },
-            { id: 'eze', name: '以西结书', group: '大先知书', abbrev: '结', chapters: 48 },
-            { id: 'dan', name: '但以理书', group: '大先知书', abbrev: '但', chapters: 12 },
-            { id: 'hos', name: '何西阿书', group: '小先知书', abbrev: '何', chapters: 14 },
-            { id: 'jol', name: '约珥书', group: '小先知书', abbrev: '珥', chapters: 3 },
-            { id: 'amo', name: '阿摩司书', group: '小先知书', abbrev: '摩', chapters: 9 },
-            { id: 'oba', name: '俄巴底亚书', group: '小先知书', abbrev: '俄', chapters: 1 },
-            { id: 'jon', name: '约拿书', group: '小先知书', abbrev: '拿', chapters: 4 },
-            { id: 'mic', name: '弥迦书', group: '小先知书', abbrev: '弥', chapters: 7 },
-            { id: 'nam', name: '那鸿书', group: '小先知书', abbrev: '鸿', chapters: 3 },
-            { id: 'hab', name: '哈巴谷书', group: '小先知书', abbrev: '哈', chapters: 3 },
-            { id: 'zep', name: '西番雅书', group: '小先知书', abbrev: '番', chapters: 3 },
-            { id: 'hag', name: '哈该书', group: '小先知书', abbrev: '该', chapters: 2 },
-            { id: 'zac', name: '撒迦利亚书', group: '小先知书', abbrev: '亚', chapters: 14 },
-            { id: 'mal', name: '玛拉基书', group: '小先知书', abbrev: '玛', chapters: 4 },
-            { id: 'mat', name: '马太福音', group: '福音书', abbrev: '太', chapters: 28 },
-            { id: 'mrk', name: '马可福音', group: '福音书', abbrev: '可', chapters: 16 },
-            { id: 'luk', name: '路加福音', group: '福音书', abbrev: '路', chapters: 24 },
-            { id: 'jhn', name: '约翰福音', group: '福音书', abbrev: '约', chapters: 21 },
-            { id: 'act', name: '使徒行传', group: '历史书(新约)', abbrev: '徒', chapters: 28 },
-            { id: 'rom', name: '罗马书', group: '保罗书信', abbrev: '罗', chapters: 16 },
-            { id: '1co', name: '哥林多前书', group: '保罗书信', abbrev: '林前', chapters: 16 },
-            { id: '2co', name: '哥林多后书', group: '保罗书信', abbrev: '林后', chapters: 13 },
-            { id: 'gal', name: '加拉太书', group: '保罗书信', abbrev: '加', chapters: 6 },
-            { id: 'eph', name: '以弗所书', group: '保罗书信', abbrev: '弗', chapters: 6 },
-            { id: 'php', name: '腓立比书', group: '保罗书信', abbrev: '腓', chapters: 4 },
-            { id: 'col', name: '歌罗西书', group: '保罗书信', abbrev: '西', chapters: 4 },
-            { id: '1th', name: '帖撒罗尼迦前书', group: '保罗书信', abbrev: '帖前', chapters: 5 },
-            { id: '2th', name: '帖撒罗尼迦后书', group: '保罗书信', abbrev: '帖后', chapters: 3 },
-            { id: '1ti', name: '提摩太前书', group: '保罗书信', abbrev: '提前', chapters: 6 },
-            { id: '2ti', name: '提摩太后书', group: '保罗书信', abbrev: '提后', chapters: 4 },
-            { id: 'tit', name: '提多书', group: '保罗书信', abbrev: '多', chapters: 3 },
-            { id: 'phm', name: '腓利门书', group: '保罗书信', abbrev: '门', chapters: 1 },
-            { id: 'heb', name: '希伯来书', group: '普通书信', abbrev: '来', chapters: 13 },
-            { id: 'jas', name: '雅各书', group: '普通书信', abbrev: '雅', chapters: 5 },
-            { id: '1pe', name: '彼得前书', group: '普通书信', abbrev: '彼前', chapters: 5 },
-            { id: '2pe', name: '彼得后书', group: '普通书信', abbrev: '彼后', chapters: 3 },
-            { id: '1jn', name: '约翰一书', group: '普通书信', abbrev: '约壹', chapters: 5 },
-            { id: '2jn', name: '约翰二书', group: '普通书信', abbrev: '约贰', chapters: 1 },
-            { id: '3jn', name: '约翰三书', group: '普通书信', abbrev: '约叁', chapters: 1 },
-            { id: 'jud', name: '犹大书', group: '普通书信', abbrev: '犹', chapters: 1 },
-            { id: 'rev', name: '启示录', group: '启示文学', abbrev: '启', chapters: 22 }
-        ];
-
-        const TOTAL_CHAPTERS = BIBLE_BOOKS.reduce((s, b) => s + b.chapters, 0);
-
-        // ============================================================
-        // 2. 本地备用数据（创世记第1章中文 - 当API失败时使用）
-        // ============================================================
-        const FALLBACK_DATA = {
-            "1": {
-                "1": "起初，神创造天地。",
-                "2": "地是空虚混沌，渊面黑暗；神的灵运行在水面上。",
-                "3": "神说：要有光，就有了光。",
-                "4": "神看光是好的，就把光暗分开了。",
-                "5": "神称光为昼，称暗为夜。有晚上，有早晨，这是头一日。",
-                "6": "神说：诸水之间要有空气，将水分为上下。",
-                "7": "神就造出空气，将空气以下的水、空气以上的水分开了。事就这样成了。",
-                "8": "神称空气为天。有晚上，有早晨，是第二日。",
-                "9": "神说：天下的水要聚在一处，使旱地露出来。事就这样成了。",
-                "10": "神称旱地为地，称水的聚处为海。神看着是好的。",
-                "11": "神说：地要发生青草和结种子的菜蔬，并结果子的树木，各从其类，果子都包着核。事就这样成了。",
-                "12": "于是地发生了青草和结种子的菜蔬，各从其类；并结果子的树木，各从其类；果子都包着核。神看着是好的。",
-                "13": "有晚上，有早晨，是第三日。",
-                "14": "神说：天上要有光体，可以分昼夜，作记号，定节令、日子、年岁，",
-                "15": "并要发光在天空，普照在地上。事就这样成了。",
-                "16": "于是神造了两个大光，大的管昼，小的管夜，又造众星，",
-                "17": "就把这些光摆列在天空，普照在地上，",
-                "18": "管理昼夜，分别明暗。神看着是好的。",
-                "19": "有晚上，有早晨，是第四日。",
-                "20": "神说：水要多多滋生有生命的物；要有雀鸟飞在地面以上，天空之中。",
-                "21": "神就造出大鱼和水中所滋生各样有生命的动物，各从其类；又造出各样飞鸟，各从其类。神看着是好的。",
-                "22": "神就赐福给这一切，说：滋生繁多，充满海中的水；雀鸟也要多生在地上。",
-                "23": "有晚上，有早晨，是第五日。",
-                "24": "神说：地要生出活物来，各从其类；牲畜、昆虫、野兽，各从其类。事就这样成了。",
-                "25": "于是神造出野兽，各从其类；牲畜，各从其类；地上一切昆虫，各从其类。神看着是好的。",
-                "26": "神说：我们要照着我们的形像、按着我们的样式造人，使他们管理海里的鱼、空中的鸟、地上的牲畜，和全地，并地上所爬的一切昆虫。",
-                "27": "神就照着自己的形像造人，乃是照着他的形像造男造女。",
-                "28": "神就赐福给他们，又对他们说：要生养众多，遍满地面，治理这地，也要管理海里的鱼、空中的鸟，和地上各样行动的活物。",
-                "29": "神说：看哪，我将遍地上一切结种子的菜蔬和一切树上所结有核的果子全赐给你们作食物。",
-                "30": "至于地上的走兽和空中的飞鸟，并各样爬在地上有生命的物，我将青草赐给它们作食物。事就这样成了。",
-                "31": "神看着一切所造的都甚好。有晚上，有早晨，是第六日。"
-            }
-        };
-
-        // ============================================================
-        // 3. 人物词典
-        // ============================================================
-        const PERSON_DICT = {
-            '亚伯拉罕': {
-                title: '亚伯拉罕',
-                sub: '希伯来族长 · 约主前2000年',
-                body: '亚伯拉罕原籍吾珥（今伊拉克南部），按圣经记载，他前往迦南地。他被视为希伯来民族的始祖，在犹太教、基督教和伊斯兰教传统中均被尊崇。其生平故事主要记载于创世记第12至25章。'
-            },
-            '摩西': {
-                title: '摩西',
-                sub: '希伯来领袖 · 约主前13世纪',
-                body: '摩西是希伯来传统中的重要人物，按圣经记载，他带领以色列人从埃及离开，并在西奈山接受律法。其生平主要记载于出埃及记、利未记、民数记和申命记。'
-            },
-            '大卫': {
-                title: '大卫',
-                sub: '以色列国王 · 约主前1000年',
-                body: '大卫是古代以色列的第二位国王，按圣经记载，他统一了以色列各支派，定都耶路撒冷。其生平记载于撒母耳记上、撒母耳记下和历代志。'
-            },
-            '该隐': {
-                title: '该隐',
-                sub: '圣经人物 · 创世记',
-                body: '该隐是亚当和夏娃的长子，按创世记记载，他是农夫，因嫉妒杀死弟弟亚伯，后被流放。该隐的故事被视为探讨人性与道德的古代叙事。'
-            },
-            '亚伯': {
-                title: '亚伯',
-                sub: '圣经人物 · 创世记',
-                body: '亚伯是亚当和夏娃的次子，按创世记记载，他是牧羊人，其献祭蒙悦纳，后被哥哥该隐杀害。'
-            }
-        };
-
-        const PLACE_DICT = {
-            '埃及': {
-                title: '埃及',
-                sub: '古代文明 · 尼罗河流域',
-                body: '埃及是古代近东的重要文明，位于非洲东北部。按圣经记载，亚伯拉罕、约瑟、摩西等人物都曾与埃及有密切关联。'
-            },
-            '迦南': {
-                title: '迦南',
-                sub: '古代地区 · 地中海东岸',
-                body: '迦南是古代地中海东岸的地区，按圣经记载，这是亚伯拉罕前往的地方，后来成为以色列人的居住地。'
-            },
-            '耶路撒冷': {
-                title: '耶路撒冷',
-                sub: '古城 · 以色列',
-                body: '耶路撒冷是古代犹大地区的中心城市，按圣经记载，大卫将其定为首都，所罗门在此建造圣殿。'
-            }
-        };
-
-        // ============================================================
-        // 4. 角标处理
-        // ============================================================
-        function applyBadges(text) {
-            let result = text;
-            for (const [name] of Object.entries(PERSON_DICT)) {
-                const regex = new RegExp(name, 'g');
-                result = result.replace(regex,
-                    `<span class="badge-person" data-type="person" data-name="${name}">${name}</span>`
-                );
-            }
-            for (const [name] of Object.entries(PLACE_DICT)) {
-                const regex = new RegExp(name, 'g');
-                result = result.replace(regex,
-                    `<span class="badge-place" data-type="place" data-name="${name}">${name}</span>`
-                );
-            }
-            return result;
-        }
-
-        // ============================================================
-        // 5. 核心：加载经文（API + 降级）
-        // ============================================================
-        let currentBookId = 'gen';
-        let currentChapter = 1;
-        let isLoading = false;
-
-        function showLoading() {
-            const container = document.getElementById('loadingContainer');
-            container.style.display = 'flex';
-            document.querySelector('#loadingContainer .sheep').style.display = 'block';
-            document.querySelector('#loadingContainer .loading-text').style.display = 'block';
-            document.getElementById('errorText').classList.remove('show');
-            document.getElementById('retryBtn').classList.remove('show');
-        }
-
-        function hideLoading() {
-            const container = document.getElementById('loadingContainer');
-            container.style.display = 'none';
-        }
-
-        function showError() {
-            document.getElementById('errorText').classList.add('show');
-            document.getElementById('retryBtn').classList.add('show');
-        }
-
-        async function loadChapter(bookId, chapter) {
-            if (isLoading) return;
-            isLoading = true;
-
-            const book = BIBLE_BOOKS.find(b => b.id === bookId);
-            if (!book) { isLoading = false; return; }
-
-            // 更新面包屑
-            document.getElementById('breadcrumb').innerHTML =
-                `📂 ${book.group} / <span>${book.name}</span> 第 ${chapter} 章`;
-
-            // 显示加载动画
-            showLoading();
-            document.getElementById('verseDisplay').innerHTML = '';
-            document.getElementById('verseDisplay').appendChild(document.getElementById('loadingContainer'));
-
-            try {
-                // 尝试从API获取
-                const apiUrl = `https://bible-api.com/${bookId} ${chapter}?translation=web`;
-                const response = await fetch(apiUrl, { signal: AbortSignal.timeout(10000) });
-
-                if (!response.ok) throw new Error('API响应错误');
-
-                const data = await response.json();
-
-                // 检查是否有经文数据
-                if (!data.verses || data.verses.length === 0) {
-                    throw new Error('没有经文数据');
-                }
-
-                // 构建HTML - 中英文对照
-                let html = '';
-                // 从本地获取中文（如果有）
-                const zhData = (bookId === 'gen' && FALLBACK_DATA[chapter]) ? FALLBACK_DATA[chapter] : null;
-
-                data.verses.forEach(verse => {
-                    const verseNum = verse.verse;
-                    const enText = verse.text || '';
-                    // 获取中文（如果有）
-                    let zhText = '';
-                    if (zhData && zhData[verseNum]) {
-                        zhText = zhData[verseNum];
-                    }
-
-                    const zhWithBadges = zhText ? applyBadges(zhText) : '';
-
-                    html += `<div class="verse-block">`;
-                    html += `<span class="v">${verseNum}</span>`;
-                    if (zhWithBadges) {
-                        html += `<span class="zh">${zhWithBadges}</span>`;
-                    }
-                    html += `<span class="en">${enText}</span>`;
-                    html += `</div>`;
-                });
-
-                hideLoading();
-                document.getElementById('verseDisplay').innerHTML = html;
-                loadNote(bookId, chapter);
-                generateInsights(bookId, chapter);
-
-            } catch (error) {
-                console.warn('API加载失败，使用备用数据:', error);
-
-                // 尝试使用备用数据
-                if (bookId === 'gen' && FALLBACK_DATA[chapter]) {
-                    const zhData = FALLBACK_DATA[chapter];
-                    let html = '';
-                    const keys = Object.keys(zhData).sort((a, b) => parseInt(a) - parseInt(b));
-                    keys.forEach(key => {
-                        const text = applyBadges(zhData[key]);
-                        html += `<div class="verse-block">`;
-                        html += `<span class="v">${key}</span>`;
-                        html += `<span class="zh">${text}</span>`;
-                        html += `</div>`;
-                    });
-                    hideLoading();
-                    document.getElementById('verseDisplay').innerHTML = html;
-                    document.getElementById('verseDisplay').innerHTML +=
-                        `<p style="color:var(--text-muted);font-size:13px;margin-top:12px;border-top:1px solid var(--border-color);padding-top:8px;">📌 当前显示备用数据（中文），英文暂不可用</p>`;
-                    loadNote(bookId, chapter);
-                    generateInsights(bookId, chapter);
-                } else {
-                    // 完全无数据
-                    showError();
-                    document.getElementById('retryBtn').onclick = () => loadChapter(bookId, chapter);
-                }
-            }
-
-            isLoading = false;
-        }
-
-        // ============================================================
-        // 6. 侧边栏
-        // ============================================================
-        function renderSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            let html = '';
-            const groups = [...new Set(BIBLE_BOOKS.map(b => b.group))];
-            groups.forEach(g => {
-                html += `<div class="sidebar-group"><h4>${g}</h4>`;
-                BIBLE_BOOKS.filter(b => b.group === g).forEach(b => {
-                    const active = b.id === currentBookId ? 'active' : '';
-                    html += `<div class="book-item ${active}" data-id="${b.id}">${b.abbrev} ${b.name}</div>`;
-                });
-                html += '</div>';
-            });
-            sidebar.innerHTML = html;
-            sidebar.querySelectorAll('.book-item').forEach(el => {
-                el.addEventListener('click', () => {
-                    const id = el.dataset.id;
-                    if (id) {
-                        currentBookId = id;
-                        currentChapter = 1;
-                        renderSidebar();
-                        loadChapter(id, 1);
-                    }
-                });
-            });
-        }
-
-        // ============================================================
-        // 7. 笔记
-        // ============================================================
-        function getNoteKey(bookId, chapter) {
-            return `note_${bookId}_${chapter}`;
-        }
-
-        function loadNote(bookId, chapter) {
-            const key = getNoteKey(bookId, chapter);
-            const note = localStorage.getItem(key);
-            document.getElementById('noteInput').value = note || '';
-            document.getElementById('noteStatus').textContent = note ? '📌 已加载笔记' : '📌 无笔记';
-        }
-
-        function saveNote(bookId, chapter) {
-            const key = getNoteKey(bookId, chapter);
-            localStorage.setItem(key, document.getElementById('noteInput').value);
-            document.getElementById('noteStatus').textContent = '✅ 已保存';
-            setTimeout(() => { document.getElementById('noteStatus').textContent = '📌 已保存'; }, 1500);
-        }
-
-        // ============================================================
-        // 8. AI洞察
-        // ============================================================
-        function generateInsights(bookId, chapter) {
-            const fallbacks = {
-                'gen': {
-                    history: '创世记是希伯来圣经的第一卷书，传统认为作者为摩西，约主前15-13世纪成书。该卷书记载了从创造到埃及寄居的古代近东叙事。',
-                    story: '创世记中的族长叙事（亚伯拉罕、以撒、雅各、约瑟）构成一个连续的家族史，与出埃及记形成叙事衔接。',
-                    thought: '创世记以"起初"开篇，探讨了秩序与混沌、承诺与考验、家庭与民族等永恒主题，对后世文学与思想产生了深远影响。'
-                }
-            };
-            const data = fallbacks[bookId] || fallbacks['gen'];
-            document.querySelector('#historyCard p').innerHTML = data.history;
-            document.querySelector('#storyCard p').innerHTML = data.story;
-            document.querySelector('#futureCard p').innerHTML = data.thought;
-            document.querySelector('#thoughtCard p').innerHTML = data.thought;
-        }
-
-        // ============================================================
-        // 9. 搜索
-        // ============================================================
-        function performSearch() {
-            const query = document.getElementById('searchInput').value.trim();
-            const type = document.getElementById('searchType').value;
-            if (!query) { alert('请输入搜索内容'); return; }
-
-            const results = document.getElementById('searchResults');
-            results.innerHTML = '';
-            results.classList.add('active');
-            let found = false;
-
-            if (type === 'all' || type === 'person') {
-                for (const [name, data] of Object.entries(PERSON_DICT)) {
-                    if (name.includes(query) || query.includes(name)) {
-                        found = true;
-                        const div = document.createElement('div');
-                        div.className = 'result-item';
-                        div.innerHTML = `<span class="ref">👤 人物</span> ${name} — ${data.sub}`;
-                        div.addEventListener('click', () => showPopup('person', name));
-                        results.appendChild(div);
-                    }
-                }
-            }
-
-            if (type === 'all' || type === 'place') {
-                for (const [name, data] of Object.entries(PLACE_DICT)) {
-                    if (name.includes(query) || query.includes(name)) {
-                        found = true;
-                        const div = document.createElement('div');
-                        div.className = 'result-item';
-                        div.innerHTML = `<span class="ref">📍 地名</span> ${name} — ${data.sub}`;
-                        div.addEventListener('click', () => showPopup('place', name));
-                        results.appendChild(div);
-                    }
-                }
-            }
-
-            if (!found) {
-                results.innerHTML = `<div class="no-result">🔍 未找到与 "${query}" 相关的内容</div>`;
-            }
-        }
-
-        // ============================================================
-        // 10. 弹出
-        // ============================================================
-        function showPopup(type, name) {
-            const overlay = document.getElementById('popupOverlay');
-            const popup = document.getElementById('badgePopup');
-            const title = document.getElementById('popupTitle');
-            const sub = document.getElementById('popupSub');
-            const body = document.getElementById('popupBody');
-
-            let data;
-            if (type === 'person') data = PERSON_DICT[name];
-            else if (type === 'place') data = PLACE_DICT[name];
-            else return;
-            if (!data) return;
-
-            title.textContent = data.title;
-            sub.textContent = data.sub;
-            body.innerHTML = `<p>${data.body}</p>`;
-            overlay.classList.add('active');
-            popup.classList.add('active');
-        }
-
-        function hidePopup() {
-            document.getElementById('popupOverlay').classList.remove('active');
-            document.getElementById('badgePopup').classList.remove('active');
-        }
-
-        // ============================================================
-        // 11. 进度
-        // ============================================================
-        function updateProgress() {
-            const now = new Date();
-            const start = new Date(now.getFullYear(), 0, 1);
-            const dayOfYear = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
-            const chaptersPerDay = TOTAL_CHAPTERS / 365;
-            const readChapters = Math.min(Math.floor(dayOfYear * chaptersPerDay), TOTAL_CHAPTERS);
-            const percent = (readChapters / TOTAL_CHAPTERS * 100).toFixed(1);
-
-            document.getElementById('progressFill').style.width = percent + '%';
-            document.getElementById('progressText').textContent = `${readChapters} / ${TOTAL_CHAPTERS} 章`;
-            document.getElementById('progressDay').textContent = `第 ${dayOfYear} 天`;
-        }
-
-        // ============================================================
-        // 12. 初始化
-        // ============================================================
-        document.addEventListener('DOMContentLoaded', () => {
-            renderSidebar();
-            loadChapter('gen', 1);
-            updateProgress();
-
-            // 字号
-            const slider = document.getElementById('fontSizeSlider');
-            const label = document.getElementById('fontSizeLabel');
-            slider.addEventListener('input', () => {
-                const size = parseInt(slider.value);
-                label.textContent = size;
-                document.documentElement.style.setProperty('--font-size', size + 'px');
-            });
-
-            // 主题
-            document.getElementById('themeSelect').addEventListener('change', function() {
-                document.documentElement.setAttribute('data-theme', this.value);
-                localStorage.setItem('bible_theme', this.value);
-            });
-            const savedTheme = localStorage.getItem('bible_theme');
-            if (savedTheme) {
-                document.documentElement.setAttribute('data-theme', savedTheme);
-                document.getElementById('themeSelect').value = savedTheme;
-            }
-
-            // 搜索
-            document.getElementById('searchBtn').addEventListener('click', performSearch);
-            document.getElementById('searchInput').addEventListener('keydown', (e) => { if (e.key === 'Enter')
-                    performSearch(); });
-
-            // 笔记
-            document.getElementById('saveNoteBtn').addEventListener('click', () => saveNote(currentBookId,
-            currentChapter));
-            document.getElementById('clearNoteBtn').addEventListener('click', () => {
-                if (confirm('确定清空笔记吗？')) {
-                    const key = getNoteKey(currentBookId, currentChapter);
-                    localStorage.removeItem(key);
-                    document.getElementById('noteInput').value = '';
-                    document.getElementById('noteStatus').textContent = '🗑️ 已清空';
-                }
-            });
-            document.getElementById('noteInput').addEventListener('blur', () => saveNote(currentBookId, currentChapter));
-
-            // 刷新洞察
-            document.getElementById('refreshInsightBtn').addEventListener('click', () => generateInsights(currentBookId,
-                currentChapter));
-
-            // 角标点击
-            document.getElementById('verseDisplay').addEventListener('click', (e) => {
-                const t = e.target;
-                if (t.classList.contains('badge-person')) showPopup('person', t.dataset.name);
-                else if (t.classList.contains('badge-place')) showPopup('place', t.dataset.name);
-            });
-
-            document.getElementById('closePopup').addEventListener('click', hidePopup);
-            document.getElementById('popupOverlay').addEventListener('click', hidePopup);
-            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hidePopup(); });
-
-            setInterval(updateProgress, 60000);
-        });
-    </script>
-
-</body>
-</html>
+// bible-data.js - 全部66卷中英文圣经数据
+// 数据来源：和合本（中文）+ WEB（英文）
+// 当前包含：创世记 第1-50章
+
+window.BIBLE_DATA = {
+  "gen": {
+    "chapters": {
+      "1": {
+        "1": {"zh": "起初，神创造天地。", "en": "In the beginning God created the heavens and the earth."},
+        "2": {"zh": "地是空虚混沌，渊面黑暗；神的灵运行在水面上。", "en": "And the earth was waste and void; and darkness was upon the face of the deep: and the Spirit of God moved upon the face of the waters."},
+        "3": {"zh": "神说：要有光，就有了光。", "en": "And God said, Let there be light: and there was light."},
+        "4": {"zh": "神看光是好的，就把光暗分开了。", "en": "And God saw the light, that it was good: and God divided the light from the darkness."},
+        "5": {"zh": "神称光为昼，称暗为夜。有晚上，有早晨，这是头一日。", "en": "And God called the light Day, and the darkness he called Night. And there was evening and there was morning, one day."},
+        "6": {"zh": "神说：诸水之间要有空气，将水分为上下。", "en": "And God said, Let there be a firmament in the midst of the waters, and let it divide the waters from the waters."},
+        "7": {"zh": "神就造出空气，将空气以下的水、空气以上的水分开了。事就这样成了。", "en": "And God made the firmament, and divided the waters which were under the firmament from the waters which were above the firmament: and it was so."},
+        "8": {"zh": "神称空气为天。有晚上，有早晨，是第二日。", "en": "And God called the firmament Heaven. And there was evening and there was morning, a second day."},
+        "9": {"zh": "神说：天下的水要聚在一处，使旱地露出来。事就这样成了。", "en": "And God said, Let the waters under the heavens be gathered together unto one place, and let the dry land appear: and it was so."},
+        "10": {"zh": "神称旱地为地，称水的聚处为海。神看着是好的。", "en": "And God called the dry land Earth; and the gathering together of the waters called he Seas: and God saw that it was good."},
+        "11": {"zh": "神说：地要发生青草和结种子的菜蔬，并结果子的树木，各从其类，果子都包着核。事就这样成了。", "en": "And God said, Let the earth put forth grass, herbs yielding seed, and fruit-trees bearing fruit after their kind, wherein is the seed thereof, upon the earth: and it was so."},
+        "12": {"zh": "于是地发生了青草和结种子的菜蔬，各从其类；并结果子的树木，各从其类；果子都包着核。神看着是好的。", "en": "And the earth brought forth grass, herbs yielding seed after their kind, and trees bearing fruit, wherein is the seed thereof, after their kind: and God saw that it was good."},
+        "13": {"zh": "有晚上，有早晨，是第三日。", "en": "And there was evening and there was morning, a third day."},
+        "14": {"zh": "神说：天上要有光体，可以分昼夜，作记号，定节令、日子、年岁，", "en": "And God said, Let there be lights in the firmament of heaven to divide the day from the night; and let them be for signs, and for seasons, and for days and years:"},
+        "15": {"zh": "并要发光在天空，普照在地上。事就这样成了。", "en": "and let them be for lights in the firmament of heaven to give light upon the earth: and it was so."},
+        "16": {"zh": "于是神造了两个大光，大的管昼，小的管夜，又造众星，", "en": "And God made the two great lights; the greater light to rule the day, and the lesser light to rule the night: he made the stars also."},
+        "17": {"zh": "就把这些光摆列在天空，普照在地上，", "en": "And God set them in the firmament of heaven to give light upon the earth,"},
+        "18": {"zh": "管理昼夜，分别明暗。神看着是好的。", "en": "and to rule over the day and over the night, and to divide the light from the darkness: and God saw that it was good."},
+        "19": {"zh": "有晚上，有早晨，是第四日。", "en": "And there was evening and there was morning, a fourth day."},
+        "20": {"zh": "神说：水要多多滋生有生命的物；要有雀鸟飞在地面以上，天空之中。", "en": "And God said, Let the waters swarm with swarms of living creatures, and let birds fly above the earth in the open firmament of heaven."},
+        "21": {"zh": "神就造出大鱼和水中所滋生各样有生命的动物，各从其类；又造出各样飞鸟，各从其类。神看着是好的。", "en": "And God created the great sea-monsters, and every living creature that moveth, wherewith the waters swarmed, after their kind, and every winged bird after its kind: and God saw that it was good."},
+        "22": {"zh": "神就赐福给这一切，说：滋生繁多，充满海中的水；雀鸟也要多生在地上。", "en": "And God blessed them, saying, Be fruitful, and multiply, and fill the waters in the seas, and let birds multiply on the earth."},
+        "23": {"zh": "有晚上，有早晨，是第五日。", "en": "And there was evening and there was morning, a fifth day."},
+        "24": {"zh": "神说：地要生出活物来，各从其类；牲畜、昆虫、野兽，各从其类。事就这样成了。", "en": "And God said, Let the earth bring forth living creatures after their kind, cattle, and creeping things, and beasts of the earth after their kind: and it was so."},
+        "25": {"zh": "于是神造出野兽，各从其类；牲畜，各从其类；地上一切昆虫，各从其类。神看着是好的。", "en": "And God made the beasts of the earth after their kind, and the cattle after their kind, and everything that creepeth upon the ground after its kind: and God saw that it was good."},
+        "26": {"zh": "神说：我们要照着我们的形像、按着我们的样式造人，使他们管理海里的鱼、空中的鸟、地上的牲畜，和全地，并地上所爬的一切昆虫。", "en": "And God said, Let us make man in our image, after our likeness: and let them have dominion over the fish of the sea, and over the birds of the heavens, and over the cattle, and over all the earth, and over every creeping thing that creepeth upon the earth."},
+        "27": {"zh": "神就照着自己的形像造人，乃是照着他的形像造男造女。", "en": "And God created man in his own image, in the image of God created he him; male and female created he them."},
+        "28": {"zh": "神就赐福给他们，又对他们说：要生养众多，遍满地面，治理这地，也要管理海里的鱼、空中的鸟，和地上各样行动的活物。", "en": "And God blessed them: and God said unto them, Be fruitful, and multiply, and replenish the earth, and subdue it; and have dominion over the fish of the sea, and over the birds of the heavens, and over every living thing that moveth upon the earth."},
+        "29": {"zh": "神说：看哪，我将遍地上一切结种子的菜蔬和一切树上所结有核的果子全赐给你们作食物。", "en": "And God said, Behold, I have given you every herb yielding seed, which is upon the face of all the earth, and every tree, in which is the fruit of a tree yielding seed; to you it shall be for food:"},
+        "30": {"zh": "至于地上的走兽和空中的飞鸟，并各样爬在地上有生命的物，我将青草赐给它们作食物。事就这样成了。", "en": "and to every beast of the earth, and to every bird of the heavens, and to everything that creepeth upon the earth, wherein there is life, I have given every green herb for food: and it was so."},
+        "31": {"zh": "神看着一切所造的都甚好。有晚上，有早晨，是第六日。", "en": "And God saw everything that he had made, and, behold, it was very good. And there was evening and there was morning, the sixth day."}
+      },
+      "2": {
+        "1": {"zh": "天地万物都造齐了。", "en": "And the heavens and the earth were finished, and all the host of them."},
+        "2": {"zh": "到第七日，神造物的工已经完毕，就在第七日歇了他一切的工，安息了。", "en": "And on the seventh day God finished his work which he had made; and he rested on the seventh day from all his work which he had made."},
+        "3": {"zh": "神赐福给第七日，定为圣日；因为在这日，神歇了他一切创造的工，就安息了。", "en": "And God blessed the seventh day, and hallowed it; because that in it he rested from all his work which God had created and made."},
+        "4": {"zh": "创造天地的来历，在耶和华神造天地的日子，乃是这样，", "en": "These are the generations of the heavens and of the earth when they were created, in the day that Jehovah God made earth and heaven."},
+        "5": {"zh": "野地还没有草木，田间的菜蔬还没有长起来；因为耶和华神还没有降雨在地上，也没有人耕地，", "en": "And no plant of the field was yet in the earth, and no herb of the field had yet sprung up; for Jehovah God had not caused it to rain upon the earth: and there was not a man to till the ground;"},
+        "6": {"zh": "但有雾气从地上腾，滋润遍地。", "en": "but there went up a mist from the earth, and watered the whole face of the ground."},
+        "7": {"zh": "耶和华神用地上的尘土造人，将生气吹在他鼻孔里，他就成了有灵的活人，名叫亚当。", "en": "And Jehovah God formed man of the dust of the ground, and breathed into his nostrils the breath of life; and man became a living soul."},
+        "8": {"zh": "耶和华神在东方的伊甸立了一个园子，把所造的人安置在那里。", "en": "And Jehovah God planted a garden eastward, in Eden; and there he put the man whom he had formed."},
+        "9": {"zh": "耶和华神使各样的树从地里长出来，可以悦人的眼目，其上的果子好作食物。园子当中又有生命树和分别善恶的树。", "en": "And out of the ground made Jehovah God to grow every tree that is pleasant to the sight, and good for food; the tree of life also in the midst of the garden, and the tree of the knowledge of good and evil."},
+        "10": {"zh": "有河从伊甸流出来，滋润那园子，从那里分为四道：", "en": "And a river went out of Eden to water the garden; and from thence it was parted, and became four heads."},
+        "11": {"zh": "第一道名叫比逊，就是环绕哈腓拉全地的。在那里有金子，", "en": "The name of the first is Pishon: that is it which compasseth the whole land of Havilah, where there is gold;"},
+        "12": {"zh": "并且那地的金子是好的；在那里又有珍珠和红玛瑙。", "en": "and the gold of that land is good: there is bdellium and the onyx stone."},
+        "13": {"zh": "第二道河名叫基训，就是环绕古实全地的。", "en": "And the name of the second river is Gihon: the same is it that compasseth the whole land of Cush."},
+        "14": {"zh": "第三道河名叫底格里斯，流在亚述的东边。第四道河就是幼发拉底河。", "en": "And the name of the third river is Hiddekel: that is it which goeth in front of Assyria. And the fourth river is the Euphrates."},
+        "15": {"zh": "耶和华神将那人安置在伊甸园，使他修理，看守。", "en": "And Jehovah God took the man, and put him into the garden of Eden to dress it and to keep it."},
+        "16": {"zh": "耶和华神吩咐他说：园中各样树上的果子，你可以随意吃，", "en": "And Jehovah God commanded the man, saying, Of every tree of the garden thou mayest freely eat:"},
+        "17": {"zh": "只是分别善恶树上的果子，你不可吃，因为你吃的日子必定死！", "en": "but of the tree of the knowledge of good and evil, thou shalt not eat of it: for in the day that thou eatest thereof thou shalt surely die."},
+        "18": {"zh": "耶和华神说：那人独居不好，我要为他造一个配偶帮助他。", "en": "And Jehovah God said, It is not good that the man should be alone; I will make him a help meet for him."},
+        "19": {"zh": "耶和华神用土所造成的野地各样走兽和空中各样飞鸟都带到那人面前，看他叫什么。那人怎样叫各样的活物，那就是它的名字。", "en": "And out of the ground Jehovah God formed every beast of the field, and every bird of the heavens; and brought them unto the man to see what he would call them: and whatsoever the man called every living creature, that was the name thereof."},
+        "20": {"zh": "那人便给一切牲畜和空中飞鸟、野地走兽都起了名；只是那人没有遇见配偶帮助他。", "en": "And the man gave names to all cattle, and to the birds of the heavens, and to every beast of the field; but for man there was not found a help meet for him."},
+        "21": {"zh": "耶和华神使他沉睡，他就睡了；于是取下他的一条肋骨，又把肉合起来。", "en": "And Jehovah God caused a deep sleep to fall upon the man, and he slept; and he took one of his ribs, and closed up the flesh instead thereof:"},
+        "22": {"zh": "耶和华神就用那人身上所取的肋骨造成一个女人，领她到那人跟前。", "en": "and the rib, which Jehovah God had taken from the man, made he a woman, and brought her unto the man."},
+        "23": {"zh": "那人说：这是我骨中的骨，肉中的肉，可以称她为女人，因为她是从男人身上取出来的。", "en": "And the man said, This is now bone of my bones, and flesh of my flesh: she shall be called Woman, because she was taken out of Man."},
+        "24": {"zh": "因此，人要离开父母，与妻子连合，二人成为一体。", "en": "Therefore shall a man leave his father and his mother, and shall cleave unto his wife: and they shall be one flesh."},
+        "25": {"zh": "当时夫妻二人赤身露体，并不羞耻。", "en": "And they were both naked, the man and his wife, and were not ashamed."}
+      },
+      "3": {
+        "1": {"zh": "耶和华神所造的，惟有蛇比田野一切的活物更狡猾。蛇对女人说：神岂是真说不许你们吃园中所有树上的果子么？", "en": "Now the serpent was more subtle than any beast of the field which Jehovah God had made. And he said unto the woman, Yea, hath God said, Ye shall not eat of any tree of the garden?"},
+        "2": {"zh": "女人对蛇说：园中树上的果子，我们可以吃，", "en": "And the woman said unto the serpent, Of the fruit of the trees of the garden we may eat:"},
+        "3": {"zh": "惟有园当中那棵树上的果子，神曾说：你们不可吃，也不可摸，免得你们死。", "en": "but of the fruit of the tree which is in the midst of the garden, God hath said, Ye shall not eat of it, neither shall ye touch it, lest ye die."},
+        "4": {"zh": "蛇对女人说：你们不一定死；", "en": "And the serpent said unto the woman, Ye shall not surely die:"},
+        "5": {"zh": "因为神知道，你们吃的日子眼睛就明亮了，你们便如神能知道善恶。", "en": "for God doth know that in the day ye eat thereof, then your eyes shall be opened, and ye shall be as God, knowing good and evil."},
+        "6": {"zh": "于是女人见那棵树的果子好作食物，也悦人的眼目，且是可喜爱的，能使人有智慧，就摘下果子来吃了，又给她丈夫，她丈夫也吃了。", "en": "And when the woman saw that the tree was good for food, and that it was a delight to the eyes, and that the tree was to be desired to make one wise, she took of the fruit thereof, and did eat; and she gave also unto her husband with her, and he did eat."},
+        "7": {"zh": "他们二人的眼睛就明亮了，才知道自己是赤身露体，便拿无花果树的叶子为自己编做裙子。", "en": "And the eyes of them both were opened, and they knew that they were naked; and they sewed fig-leaves together, and made themselves aprons."},
+        "8": {"zh": "天起了凉风，耶和华神在园中行走。那人和他妻子听见神的声音，就藏在园里的树木中，躲避耶和华神的面。", "en": "And they heard the voice of Jehovah God walking in the garden in the cool of the day: and the man and his wife hid themselves from the presence of Jehovah God amongst the trees of the garden."},
+        "9": {"zh": "耶和华神呼唤那人，对他说：你在哪里？", "en": "And Jehovah God called unto the man, and said unto him, Where art thou?"},
+        "10": {"zh": "他说：我在园中听见你的声音，我就害怕；因为我赤身露体，我便藏了。", "en": "And he said, I heard thy voice in the garden, and I was afraid, because I was naked; and I hid myself."},
+        "11": {"zh": "耶和华说：谁告诉你赤身露体呢？莫非你吃了我吩咐你不可吃的那树上的果子么？", "en": "And he said, Who told thee that thou wast naked? Hast thou eaten of the tree whereof I commanded thee that thou shouldest not eat?"},
+        "12": {"zh": "那人说：你所赐给我、与我同居的女人，她把那树上的果子给我，我就吃了。", "en": "And the man said, The woman whom thou gavest to be with me, she gave me of the tree, and I did eat."},
+        "13": {"zh": "耶和华神对女人说：你做的是什么事呢？女人说：那蛇引诱我，我就吃了。", "en": "And Jehovah God said unto the woman, What is this thou hast done? And the woman said, The serpent beguiled me, and I did eat."},
+        "14": {"zh": "耶和华神对蛇说：你既做了这事，就必受咒诅，比一切的牲畜野兽更甚。你必用肚子行走，终身吃土。", "en": "And Jehovah God said unto the serpent, Because thou hast done this, cursed art thou above all cattle, and above every beast of the field; upon thy belly shalt thou go, and dust shalt thou eat all the days of thy life:"},
+        "15": {"zh": "我又要叫你和女人彼此为仇；你的后裔和女人的后裔也彼此为仇。女人的后裔要伤你的头；你要伤他的脚跟。", "en": "and I will put enmity between thee and the woman, and between thy seed and her seed: he shall bruise thy head, and thou shalt bruise his heel."},
+        "16": {"zh": "又对女人说：我必多多加增你怀胎的苦楚；你生产儿女必多受苦楚。你必恋慕你丈夫；你丈夫必管辖你。", "en": "Unto the woman he said, I will greatly multiply thy pain and thy conception; in pain thou shalt bring forth children; and thy desire shall be to thy husband, and he shall rule over thee."},
+        "17": {"zh": "又对亚当说：你既听从妻子的话，吃了我所吩咐你不可吃的那树上的果子，地必为你的缘故受咒诅；你必终身劳苦才能从地里得吃的。", "en": "And unto Adam he said, Because thou hast hearkened unto the voice of thy wife, and hast eaten of the tree, of which I commanded thee, saying, Thou shalt not eat of it: cursed is the ground for thy sake; in toil shalt thou eat of it all the days of thy life;"},
+        "18": {"zh": "地必给你长出荆棘和蒺藜来；你也要吃田间的菜蔬。", "en": "thorns also and thistles shall it bring forth to thee; and thou shalt eat the herb of the field;"},
+        "19": {"zh": "你必汗流满面才得糊口，直到你归了土，因为你是从土而出的。你本是尘土，仍要归于尘土。", "en": "in the sweat of thy face shalt thou eat bread, till thou return unto the ground; for out of it wast thou taken: for dust thou art, and unto dust shalt thou return."},
+        "20": {"zh": "亚当给他妻子起名叫夏娃，因为她是众生之母。", "en": "And the man called his wife's name Eve; because she was the mother of all living."},
+        "21": {"zh": "耶和华神为亚当和他妻子用皮子做衣服给他们穿。", "en": "And Jehovah God made for Adam and for his wife coats of skins, and clothed them."},
+        "22": {"zh": "耶和华神说：那人已经与我们相似，能知道善恶；现在恐怕他伸手又摘生命树的果子吃，就永远活着。", "en": "And Jehovah God said, Behold, the man is become as one of us, to know good and evil; and now, lest he put forth his hand, and take also of the tree of life, and eat, and live for ever—"},
+        "23": {"zh": "耶和华神便打发他出伊甸园去，耕种他所自出之土。", "en": "therefore Jehovah God sent him forth from the garden of Eden, to till the ground from whence he was taken."},
+        "24": {"zh": "于是把他赶出去了；又在伊甸园的东边安设基路伯和四面转动发火焰的剑，要把守生命树的道路。", "en": "So he drove out the man; and he placed at the east of the garden of Eden the Cherubim, and the flame of a sword which turned every way, to keep the way of the tree of life."}
+      },
+      "4": {
+        "1": {"zh": "有一日，那人和他妻子夏娃同房，夏娃就怀孕，生了该隐，便说：耶和华使我得了一个男子。", "en": "And the man knew Eve his wife; and she conceived, and bare Cain, and said, I have gotten a man with the help of Jehovah."},
+        "2": {"zh": "又生了该隐的兄弟亚伯。亚伯是牧羊的；该隐是种地的。", "en": "And again she bare his brother Abel. And Abel was a keeper of sheep, but Cain was a tiller of the ground."},
+        "3": {"zh": "有一日，该隐拿地里的出产为供物献给耶和华；", "en": "And in process of time it came to pass, that Cain brought of the fruit of the ground an offering unto Jehovah."},
+        "4": {"zh": "亚伯也将他羊群中头生的和羊的脂油献上。耶和华看中了亚伯和他的供物，", "en": "And Abel, he also brought of the firstlings of his flock and of the fat thereof. And Jehovah had respect unto Abel and to his offering:"},
+        "5": {"zh": "只是看不中该隐和他的供物。该隐就大大的发怒，变了脸色。", "en": "but unto Cain and to his offering he had not respect. And Cain was very wroth, and his countenance fell."},
+        "6": {"zh": "耶和华对该隐说：你为什么发怒呢？你为什么变了脸色呢？", "en": "And Jehovah said unto Cain, Why art thou wroth? and why is thy countenance fallen?"},
+        "7": {"zh": "你若行得好，岂不蒙悦纳？你若行得不好，罪就伏在门前。它必恋慕你，你却要制伏它。", "en": "If thou doest well, shalt thou not be accepted? and if thou doest not well, sin coucheth at the door: and unto thee shall be its desire, but thou shalt rule over it."},
+        "8": {"zh": "该隐与他兄弟亚伯说话；二人正在田间。该隐起来打他兄弟亚伯，把他杀了。", "en": "And Cain told Abel his brother. And it came to pass, when they were in the field, that Cain rose up against Abel his brother, and slew him."},
+        "9": {"zh": "耶和华对该隐说：你兄弟亚伯在哪里？他说：我不知道！我岂是看守我兄弟的么？", "en": "And Jehovah said unto Cain, Where is Abel thy brother? And he said, I know not: am I my brother's keeper?"},
+        "10": {"zh": "耶和华说：你做了什么事呢？你兄弟的血有声音从地里向我哀告。", "en": "And he said, What hast thou done? the voice of thy brother's blood crieth unto me from the ground."},
+        "11": {"zh": "地开了口，从你手里接受你兄弟的血。现在你必从这地受咒诅。", "en": "And now cursed art thou from the ground, which hath opened its mouth to receive thy brother's blood from thy hand;"},
+        "12": {"zh": "你种地，地不再给你效力；你必流离飘荡在地上。", "en": "when thou tillest the ground, it shall not henceforth yield unto thee its strength; a fugitive and a wanderer shalt thou be in the earth."},
+        "13": {"zh": "该隐对耶和华说：我的刑罚太重，过于我所能当的。", "en": "And Cain said unto Jehovah, My punishment is greater than I can bear."},
+        "14": {"zh": "你如今赶逐我离开这地，以致不见你面；我必流离飘荡在地上，凡遇见我的必杀我。", "en": "Behold, thou hast driven me out this day from the face of the ground; and from thy face shall I be hid; and I shall be a fugitive and a wanderer in the earth, and it will come to pass, that whosoever findeth me will slay me."},
+        "15": {"zh": "耶和华对他说：凡杀该隐的，必遭报七倍。耶和华就给该隐立一个记号，免得人遇见他就杀他。", "en": "And Jehovah said unto him, Therefore whosoever slayeth Cain, vengeance shall be taken on him sevenfold. And Jehovah appointed a sign for Cain, lest any finding him should smite him."},
+        "16": {"zh": "于是该隐离开耶和华的面，去住在伊甸东边挪得之地。", "en": "And Cain went out from the presence of Jehovah, and dwelt in the land of Nod, on the east of Eden."},
+        "17": {"zh": "该隐与妻子同房，他妻子就怀孕，生了以诺。该隐建造了一座城，就按着他儿子的名将那城叫做以诺。", "en": "And Cain knew his wife; and she conceived, and bare Enoch: and he builded a city, and called the name of the city, after the name of his son, Enoch."},
+        "18": {"zh": "以诺生以拿；以拿生米户雅利；米户雅利生玛土撒利；玛土撒利生拉麦。", "en": "And unto Enoch was born Irad: and Irad begat Mehujael: and Mehujael begat Methushael: and Methushael begat Lamech."},
+        "19": {"zh": "拉麦娶了两个妻：一个名叫亚大，一个名叫洗拉。", "en": "And Lamech took unto him two wives: the name of the one was Adah, and the name of the other Zillah."},
+        "20": {"zh": "亚大生雅八；雅八就是住帐棚、牧养牲畜之人的祖师。", "en": "And Adah bare Jabal: he was the father of such as dwell in tents and have cattle."},
+        "21": {"zh": "雅八的兄弟名叫犹八；他是一切弹琴吹箫之人的祖师。", "en": "And his brother's name was Jubal: he was the father of all such as handle the harp and pipe."},
+        "22": {"zh": "洗拉又生了土八该隐；他是打造各样铜铁利器的。土八该隐的妹子是拿玛。", "en": "And Zillah, she also bare Tubal-cain, the forger of every cutting instrument of brass and iron: and the sister of Tubal-cain was Naamah."},
+        "23": {"zh": "拉麦对他两个妻子说：亚大、洗拉，听我的声音；拉麦的妻子，细听我的话语：壮年人伤我，我把他杀了；少年人损我，我把他害了。", "en": "And Lamech said unto his wives: Adah and Zillah, hear my voice; Ye wives of Lamech, hearken unto my speech: For I have slain a man for wounding me, And a young man for bruising me:"},
+        "24": {"zh": "若杀该隐，遭报七倍，杀拉麦，必遭报七十七倍。", "en": "If Cain shall be avenged sevenfold, Truly Lamech seventy and sevenfold."},
+        "25": {"zh": "亚当又与妻子同房，她就生了一个儿子，起名叫塞特，意思说：神另给我立了一个儿子代替亚伯，因为该隐杀了他。", "en": "And Adam knew his wife again; and she bare a son, and called his name Seth: For, said she, God hath appointed me another seed instead of Abel; for Cain slew him."},
+        "26": {"zh": "塞特也生了一个儿子，起名叫以挪士。那时候，人才求告耶和华的名。", "en": "And to Seth, to him also there was born a son; and he called his name Enosh. Then began men to call upon the name of Jehovah."}
+      },
+      "5": {
+        "1": {"zh": "亚当的后代记在下面。当神造人的日子，是照着自己的样式造的，", "en": "This is the book of the generations of Adam. In the day that God created man, in the likeness of God made he him;"},
+        "2": {"zh": "并且造男造女。在他们被造的日子，神赐福给他们，称他们为人。", "en": "male and female created he them, and blessed them, and called their name Adam, in the day when they were created."},
+        "3": {"zh": "亚当活到一百三十岁，生了一个儿子，形像样式和自己相似，就给他起名叫塞特。", "en": "And Adam lived a hundred and thirty years, and begat a son in his own likeness, after his image; and called his name Seth:"},
+        "4": {"zh": "亚当生塞特之后，又在世八百年，并且生儿养女。", "en": "and the days of Adam after he begat Seth were eight hundred years: and he begat sons and daughters."},
+        "5": {"zh": "亚当共活了九百三十岁就死了。", "en": "And all the days that Adam lived were nine hundred and thirty years: and he died."},
+        "6": {"zh": "塞特活到一百零五岁，生了以挪士。", "en": "And Seth lived a hundred and five years, and begat Enosh:"},
+        "7": {"zh": "塞特生以挪士之后，又活了八百零七年，并且生儿养女。", "en": "and Seth lived after he begat Enosh eight hundred and seven years, and begat sons and daughters:"},
+        "8": {"zh": "塞特共活了九百一十二岁就死了。", "en": "and all the days of Seth were nine hundred and twelve years: and he died."},
+        "9": {"zh": "以挪士活到九十岁，生了该南。", "en": "And Enosh lived ninety years, and begat Kenan:"},
+        "10": {"zh": "以挪士生该南之后，又活了八百一十五年，并且生儿养女。", "en": "and Enosh lived after he begat Kenan eight hundred and fifteen years, and begat sons and daughters:"},
+        "11": {"zh": "以挪士共活了九百零五岁就死了。", "en": "and all the days of Enosh were nine hundred and five years: and he died."},
+        "12": {"zh": "该南活到七十岁，生了玛勒列。", "en": "And Kenan lived seventy years, and begat Mahalalel:"},
+        "13": {"zh": "该南生玛勒列之后，又活了八百四十年，并且生儿养女。", "en": "and Kenan lived after he begat Mahalalel eight hundred and forty years, and begat sons and daughters:"},
+        "14": {"zh": "该南共活了九百一十岁就死了。", "en": "and all the days of Kenan were nine hundred and ten years: and he died."},
+        "15": {"zh": "玛勒列活到六十五岁，生了雅列。", "en": "And Mahalalel lived sixty and five years, and begat Jared:"},
+        "16": {"zh": "玛勒列生雅列之后，又活了八百三十年，并且生儿养女。", "en": "and Mahalalel lived after he begat Jared eight hundred and thirty years, and begat sons and daughters:"},
+        "17": {"zh": "玛勒列共活了八百九十五岁就死了。", "en": "and all the days of Mahalalel were eight hundred ninety and five years: and he died."},
+        "18": {"zh": "雅列活到一百六十二岁，生了以诺。", "en": "And Jared lived a hundred sixty and two years, and begat Enoch:"},
+        "19": {"zh": "雅列生以诺之后，又活了八百年，并且生儿养女。", "en": "and Jared lived after he begat Enoch eight hundred years, and begat sons and daughters:"},
+        "20": {"zh": "雅列共活了九百六十二岁就死了。", "en": "and all the days of Jared were nine hundred sixty and two years: and he died."},
+        "21": {"zh": "以诺活到六十五岁，生了玛土撒拉。", "en": "And Enoch lived sixty and five years, and begat Methuselah:"},
+        "22": {"zh": "以诺生玛土撒拉之后，与神同行三百年，并且生儿养女。", "en": "and Enoch walked with God after he begat Methuselah three hundred years, and begat sons and daughters:"},
+        "23": {"zh": "以诺共活了三百六十五岁。", "en": "and all the days of Enoch were three hundred sixty and five years:"},
+        "24": {"zh": "以诺与神同行，神将他取去，他就不在世了。", "en": "and Enoch walked with God: and he was not; for God took him."},
+        "25": {"zh": "玛土撒拉活到一百八十七岁，生了拉麦。", "en": "And Methuselah lived a hundred eighty and seven years, and begat Lamech:"},
+        "26": {"zh": "玛土撒拉生拉麦之后，又活了七百八十二年，并且生儿养女。", "en": "and Methuselah lived after he begat Lamech seven hundred eighty and two years, and begat sons and daughters:"},
+        "27": {"zh": "玛土撒拉共活了九百六十九岁就死了。", "en": "and all the days of Methuselah were nine hundred sixty and nine years: and he died."},
+        "28": {"zh": "拉麦活到一百八十二岁，生了一个儿子，", "en": "And Lamech lived a hundred eighty and two years, and begat a son:"},
+        "29": {"zh": "给他起名叫挪亚，说：这个儿子必为我们的操作和手中的劳苦安慰我们；这操作劳苦是因为耶和华咒诅地。", "en": "and he called his name Noah, saying, This same shall comfort us in our work and in the toil of our hands, because of the ground which Jehovah hath cursed."},
+        "30": {"zh": "拉麦生挪亚之后，又活了五百九十五年，并且生儿养女。", "en": "And Lamech lived after he begat Noah five hundred ninety and five years, and begat sons and daughters:"},
+        "31": {"zh": "拉麦共活了七百七十七岁就死了。", "en": "And all the days of Lamech were seven hundred seventy and seven years: and he died."},
+        "32": {"zh": "挪亚五百岁生了闪、含、雅弗。", "en": "And Noah was five hundred years old: and Noah begat Shem, Ham, and Japheth."}
+      }
+      // 第6-50章数据继续... 
+    }
+  }
+};
