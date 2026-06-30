@@ -304,6 +304,7 @@
             font-weight: 600;
         }
 
+        /* ===== 经文显示 ===== */
         .verse-text {
             font-size: var(--font-size);
             line-height: var(--line-height);
@@ -316,8 +317,22 @@
             margin-right: 4px;
             font-size: 0.8em;
         }
-        .verse-text p {
-            margin-bottom: 6px;
+        .verse-text .en {
+            color: var(--text-muted);
+            font-size: 0.85em;
+            display: block;
+            margin-left: 24px;
+            border-left: 3px solid var(--border-color);
+            padding-left: 12px;
+            margin-bottom: 8px;
+        }
+        .verse-text .zh {
+            display: block;
+            margin-bottom: 2px;
+        }
+        .verse-text .verse-block {
+            margin-bottom: 8px;
+            padding: 4px 0;
         }
 
         .badge-person {
@@ -343,6 +358,84 @@
         .badge-place:hover {
             background: rgba(41, 128, 185, 0.1);
             border-radius: 4px;
+        }
+
+        /* ===== 加载动画 - 小羊 ===== */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            gap: 20px;
+        }
+        .loading-container .sheep {
+            font-size: 80px;
+            animation: sheepBounce 1.2s ease-in-out infinite;
+            display: inline-block;
+        }
+        @keyframes sheepBounce {
+            0%,
+            100% {
+                transform: translateY(0) rotate(-3deg);
+            }
+            50% {
+                transform: translateY(-15px) rotate(3deg);
+            }
+        }
+        .loading-container .loading-text {
+            font-size: 18px;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 2px;
+        }
+        .loading-container .loading-dots::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        @keyframes dots {
+            0% {
+                content: '';
+            }
+            25% {
+                content: '.';
+            }
+            50% {
+                content: '..';
+            }
+            75% {
+                content: '...';
+            }
+            100% {
+                content: '';
+            }
+        }
+        .loading-container .retry-btn {
+            margin-top: 12px;
+            padding: 10px 30px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 40px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: none;
+        }
+        .loading-container .retry-btn:hover {
+            background: var(--accent-hover);
+        }
+        .loading-container .retry-btn.show {
+            display: inline-block;
+        }
+        .loading-container .error-text {
+            color: #c0392b;
+            font-size: 14px;
+            margin-top: 4px;
+            display: none;
+        }
+        .loading-container .error-text.show {
+            display: block;
         }
 
         .search-results {
@@ -373,12 +466,6 @@
             color: var(--accent);
             font-weight: 600;
             margin-right: 8px;
-        }
-        .search-results .no-result {
-            color: var(--text-muted);
-            font-style: italic;
-            font-size: 14px;
-            padding: 8px 0;
         }
 
         .insight-panel {
@@ -720,7 +807,16 @@
             <div class="content" id="contentArea">
                 <div class="breadcrumb" id="breadcrumb">📂 旧约 / <span>创世记</span> 第 1 章</div>
                 <div class="search-results" id="searchResults"></div>
-                <div class="verse-text" id="verseDisplay"></div>
+
+                <!-- 经文显示区域 -->
+                <div class="verse-text" id="verseDisplay">
+                    <div class="loading-container" id="loadingContainer">
+                        <div class="sheep">🐑</div>
+                        <div class="loading-text">加载经文<span class="loading-dots"></span></div>
+                        <div class="error-text" id="errorText">⚠️ 加载失败，请检查网络连接</div>
+                        <button class="retry-btn" id="retryBtn">🔄 重试</button>
+                    </div>
+                </div>
 
                 <div class="insight-panel" id="insightPanel">
                     <div class="insight-row">
@@ -850,78 +946,46 @@
         const TOTAL_CHAPTERS = BIBLE_BOOKS.reduce((s, b) => s + b.chapters, 0);
 
         // ============================================================
-        // 2. 创世记 1-5 章经文数据（完整中英文）
+        // 2. 本地备用数据（创世记第1章中文 - 当API失败时使用）
         // ============================================================
-        // 这里只放第1章作为示例，你可以继续添加第2-50章
-        const GENESIS_DATA = {
+        const FALLBACK_DATA = {
             "1": {
-                "1": { "zh": "起初，神创造天地。", "en": "In the beginning, God created the heavens and the earth." },
-                "2": { "zh": "地是空虚混沌，渊面黑暗；神的灵运行在水面上。", "en": "The earth was without form and void, and darkness was over the face of the deep. And the Spirit of God was hovering over the face of the waters." },
-                "3": { "zh": "神说：要有光，就有了光。", "en": "And God said, \"Let there be light,\" and there was light." },
-                "4": { "zh": "神看光是好的，就把光暗分开了。", "en": "And God saw that the light was good. And God separated the light from the darkness." },
-                "5": { "zh": "神称光为昼，称暗为夜。有晚上，有早晨，这是头一日。", "en": "God called the light Day, and the darkness he called Night. And there was evening and there was morning, the first day." },
-                "6": { "zh": "神说：诸水之间要有空气，将水分为上下。", "en": "And God said, \"Let there be an expanse in the midst of the waters, and let it separate the waters from the waters.\"" },
-                "7": { "zh": "神就造出空气，将空气以下的水、空气以上的水分开了。事就这样成了。", "en": "And God made the expanse and separated the waters that were under the expanse from the waters that were above the expanse. And it was so." },
-                "8": { "zh": "神称空气为天。有晚上，有早晨，是第二日。", "en": "And God called the expanse Heaven. And there was evening and there was morning, the second day." },
-                "9": { "zh": "神说：天下的水要聚在一处，使旱地露出来。事就这样成了。", "en": "And God said, \"Let the waters under the heavens be gathered together into one place, and let the dry land appear.\" And it was so." },
-                "10": { "zh": "神称旱地为地，称水的聚处为海。神看着是好的。", "en": "God called the dry land Earth, and the waters that were gathered together he called Seas. And God saw that it was good." },
-                "11": { "zh": "神说：地要发生青草和结种子的菜蔬，并结果子的树木，各从其类，果子都包着核。事就这样成了。", "en": "And God said, \"Let the earth sprout vegetation, plants yielding seed, and fruit trees bearing fruit in which is their seed, each according to its kind, on the earth.\" And it was so." },
-                "12": { "zh": "于是地发生了青草和结种子的菜蔬，各从其类；并结果子的树木，各从其类；果子都包着核。神看着是好的。", "en": "The earth brought forth vegetation, plants yielding seed according to their own kinds, and trees bearing fruit in which is their seed, each according to its kind. And God saw that it was good." },
-                "13": { "zh": "有晚上，有早晨，是第三日。", "en": "And there was evening and there was morning, the third day." },
-                "14": { "zh": "神说：天上要有光体，可以分昼夜，作记号，定节令、日子、年岁，", "en": "And God said, \"Let there be lights in the expanse of the heavens to separate the day from the night. And let them be for signs and for seasons, and for days and years," },
-                "15": { "zh": "并要发光在天空，普照在地上。事就这样成了。", "en": "and let them be lights in the expanse of the heavens to give light upon the earth.\" And it was so." },
-                "16": { "zh": "于是神造了两个大光，大的管昼，小的管夜，又造众星，", "en": "And God made the two great lights—the greater light to rule the day and the lesser light to rule the night—and the stars." },
-                "17": { "zh": "就把这些光摆列在天空，普照在地上，", "en": "And God set them in the expanse of the heavens to give light on the earth," },
-                "18": { "zh": "管理昼夜，分别明暗。神看着是好的。", "en": "to rule over the day and over the night, and to separate the light from the darkness. And God saw that it was good." },
-                "19": { "zh": "有晚上，有早晨，是第四日。", "en": "And there was evening and there was morning, the fourth day." },
-                "20": { "zh": "神说：水要多多滋生有生命的物；要有雀鸟飞在地面以上，天空之中。", "en": "And God said, \"Let the waters swarm with swarms of living creatures, and let birds fly above the earth across the expanse of the heavens.\"" },
-                "21": { "zh": "神就造出大鱼和水中所滋生各样有生命的动物，各从其类；又造出各样飞鸟，各从其类。神看着是好的。", "en": "So God created the great sea creatures and every living creature that moves, with which the waters swarm, according to their kinds, and every winged bird according to its kind. And God saw that it was good." },
-                "22": { "zh": "神就赐福给这一切，说：滋生繁多，充满海中的水；雀鸟也要多生在地上。", "en": "And God blessed them, saying, \"Be fruitful and multiply and fill the waters in the seas, and let birds multiply on the earth.\"" },
-                "23": { "zh": "有晚上，有早晨，是第五日。", "en": "And there was evening and there was morning, the fifth day." },
-                "24": { "zh": "神说：地要生出活物来，各从其类；牲畜、昆虫、野兽，各从其类。事就这样成了。", "en": "And God said, \"Let the earth bring forth living creatures according to their kinds—livestock and creeping things and beasts of the earth according to their kinds.\" And it was so." },
-                "25": { "zh": "于是神造出野兽，各从其类；牲畜，各从其类；地上一切昆虫，各从其类。神看着是好的。", "en": "And God made the beasts of the earth according to their kinds and the livestock according to their kinds, and everything that creeps on the ground according to its kind. And God saw that it was good." },
-                "26": { "zh": "神说：我们要照着我们的形像、按着我们的样式造人，使他们管理海里的鱼、空中的鸟、地上的牲畜，和全地，并地上所爬的一切昆虫。", "en": "Then God said, \"Let us make man in our image, after our likeness. And let them have dominion over the fish of the sea and over the birds of the heavens and over the livestock and over all the earth and over every creeping thing that creeps on the earth.\"" },
-                "27": { "zh": "神就照着自己的形像造人，乃是照着他的形像造男造女。", "en": "So God created man in his own image, in the image of God he created him; male and female he created them." },
-                "28": { "zh": "神就赐福给他们，又对他们说：要生养众多，遍满地面，治理这地，也要管理海里的鱼、空中的鸟，和地上各样行动的活物。", "en": "And God blessed them. And God said to them, \"Be fruitful and multiply and fill the earth and subdue it, and have dominion over the fish of the sea and over the birds of the heavens and over every living thing that moves on the earth.\"" },
-                "29": { "zh": "神说：看哪，我将遍地上一切结种子的菜蔬和一切树上所结有核的果子全赐给你们作食物。", "en": "And God said, \"Behold, I have given you every plant yielding seed that is on the face of all the earth, and every tree with seed in its fruit. You shall have them for food." },
-                "30": { "zh": "至于地上的走兽和空中的飞鸟，并各样爬在地上有生命的物，我将青草赐给它们作食物。事就这样成了。", "en": "And to every beast of the earth and to every bird of the heavens and to everything that creeps on the earth, everything that has the breath of life, I have given every green plant for food.\" And it was so." },
-                "31": { "zh": "神看着一切所造的都甚好。有晚上，有早晨，是第六日。", "en": "And God saw everything that he had made, and behold, it was very good. And there was evening and there was morning, the sixth day." }
+                "1": "起初，神创造天地。",
+                "2": "地是空虚混沌，渊面黑暗；神的灵运行在水面上。",
+                "3": "神说：要有光，就有了光。",
+                "4": "神看光是好的，就把光暗分开了。",
+                "5": "神称光为昼，称暗为夜。有晚上，有早晨，这是头一日。",
+                "6": "神说：诸水之间要有空气，将水分为上下。",
+                "7": "神就造出空气，将空气以下的水、空气以上的水分开了。事就这样成了。",
+                "8": "神称空气为天。有晚上，有早晨，是第二日。",
+                "9": "神说：天下的水要聚在一处，使旱地露出来。事就这样成了。",
+                "10": "神称旱地为地，称水的聚处为海。神看着是好的。",
+                "11": "神说：地要发生青草和结种子的菜蔬，并结果子的树木，各从其类，果子都包着核。事就这样成了。",
+                "12": "于是地发生了青草和结种子的菜蔬，各从其类；并结果子的树木，各从其类；果子都包着核。神看着是好的。",
+                "13": "有晚上，有早晨，是第三日。",
+                "14": "神说：天上要有光体，可以分昼夜，作记号，定节令、日子、年岁，",
+                "15": "并要发光在天空，普照在地上。事就这样成了。",
+                "16": "于是神造了两个大光，大的管昼，小的管夜，又造众星，",
+                "17": "就把这些光摆列在天空，普照在地上，",
+                "18": "管理昼夜，分别明暗。神看着是好的。",
+                "19": "有晚上，有早晨，是第四日。",
+                "20": "神说：水要多多滋生有生命的物；要有雀鸟飞在地面以上，天空之中。",
+                "21": "神就造出大鱼和水中所滋生各样有生命的动物，各从其类；又造出各样飞鸟，各从其类。神看着是好的。",
+                "22": "神就赐福给这一切，说：滋生繁多，充满海中的水；雀鸟也要多生在地上。",
+                "23": "有晚上，有早晨，是第五日。",
+                "24": "神说：地要生出活物来，各从其类；牲畜、昆虫、野兽，各从其类。事就这样成了。",
+                "25": "于是神造出野兽，各从其类；牲畜，各从其类；地上一切昆虫，各从其类。神看着是好的。",
+                "26": "神说：我们要照着我们的形像、按着我们的样式造人，使他们管理海里的鱼、空中的鸟、地上的牲畜，和全地，并地上所爬的一切昆虫。",
+                "27": "神就照着自己的形像造人，乃是照着他的形像造男造女。",
+                "28": "神就赐福给他们，又对他们说：要生养众多，遍满地面，治理这地，也要管理海里的鱼、空中的鸟，和地上各样行动的活物。",
+                "29": "神说：看哪，我将遍地上一切结种子的菜蔬和一切树上所结有核的果子全赐给你们作食物。",
+                "30": "至于地上的走兽和空中的飞鸟，并各样爬在地上有生命的物，我将青草赐给它们作食物。事就这样成了。",
+                "31": "神看着一切所造的都甚好。有晚上，有早晨，是第六日。"
             }
         };
 
         // ============================================================
-        // 3. 获取经文
-        // ============================================================
-        function getChapterText(bookId, chapter) {
-            // 如果是创世记，从数据中读取
-            if (bookId === 'gen' && GENESIS_DATA[chapter]) {
-                const ch = GENESIS_DATA[chapter];
-                let html = '';
-                const verseKeys = Object.keys(ch).sort((a, b) => parseInt(a) - parseInt(b));
-                for (const key of verseKeys) {
-                    const v = ch[key];
-                    if (v) {
-                        const textWithBadges = applyBadges(v.zh);
-                        html += `<span class="v">${key}</span> ${textWithBadges}<br>`;
-                    }
-                }
-                return html || '<p style="color:var(--text-muted);">暂无经文数据</p>';
-            }
-
-            // 其他书卷：显示提示信息
-            let html = '';
-            const book = BIBLE_BOOKS.find(b => b.id === bookId);
-            if (book) {
-                html =
-                    `<p style="color:var(--text-muted);">📖 《${book.name}》第 ${chapter} 章的经文数据正在录入中...</p>`;
-                html +=
-                    `<p style="color:var(--text-muted);font-size:14px;margin-top:8px;">💡 目前已收录：创世记第1章（完整中英文对照）</p>`;
-            }
-            return html;
-        }
-
-        // ============================================================
-        // 4. 人物词典
+        // 3. 人物词典
         // ============================================================
         const PERSON_DICT = {
             '亚伯拉罕': {
@@ -970,7 +1034,7 @@
         };
 
         // ============================================================
-        // 5. 角标处理
+        // 4. 角标处理
         // ============================================================
         function applyBadges(text) {
             let result = text;
@@ -990,31 +1054,125 @@
         }
 
         // ============================================================
-        // 6. 状态管理
+        // 5. 核心：加载经文（API + 降级）
         // ============================================================
         let currentBookId = 'gen';
         let currentChapter = 1;
+        let isLoading = false;
 
-        function loadBook(bookId, chapter = 1) {
-            currentBookId = bookId;
-            currentChapter = chapter;
+        function showLoading() {
+            const container = document.getElementById('loadingContainer');
+            container.style.display = 'flex';
+            document.querySelector('#loadingContainer .sheep').style.display = 'block';
+            document.querySelector('#loadingContainer .loading-text').style.display = 'block';
+            document.getElementById('errorText').classList.remove('show');
+            document.getElementById('retryBtn').classList.remove('show');
+        }
+
+        function hideLoading() {
+            const container = document.getElementById('loadingContainer');
+            container.style.display = 'none';
+        }
+
+        function showError() {
+            document.getElementById('errorText').classList.add('show');
+            document.getElementById('retryBtn').classList.add('show');
+        }
+
+        async function loadChapter(bookId, chapter) {
+            if (isLoading) return;
+            isLoading = true;
+
             const book = BIBLE_BOOKS.find(b => b.id === bookId);
-            if (!book) return;
+            if (!book) { isLoading = false; return; }
 
-            renderSidebar();
+            // 更新面包屑
             document.getElementById('breadcrumb').innerHTML =
                 `📂 ${book.group} / <span>${book.name}</span> 第 ${chapter} 章`;
 
-            const verseHtml = getChapterText(bookId, chapter);
-            document.getElementById('verseDisplay').innerHTML = verseHtml;
+            // 显示加载动画
+            showLoading();
+            document.getElementById('verseDisplay').innerHTML = '';
+            document.getElementById('verseDisplay').appendChild(document.getElementById('loadingContainer'));
 
-            loadNote(bookId, chapter);
-            generateInsights(bookId, chapter);
+            try {
+                // 尝试从API获取
+                const apiUrl = `https://bible-api.com/${bookId} ${chapter}?translation=web`;
+                const response = await fetch(apiUrl, { signal: AbortSignal.timeout(10000) });
 
-            document.getElementById('searchResults').classList.remove('active');
-            document.getElementById('searchResults').innerHTML = '';
+                if (!response.ok) throw new Error('API响应错误');
+
+                const data = await response.json();
+
+                // 检查是否有经文数据
+                if (!data.verses || data.verses.length === 0) {
+                    throw new Error('没有经文数据');
+                }
+
+                // 构建HTML - 中英文对照
+                let html = '';
+                // 从本地获取中文（如果有）
+                const zhData = (bookId === 'gen' && FALLBACK_DATA[chapter]) ? FALLBACK_DATA[chapter] : null;
+
+                data.verses.forEach(verse => {
+                    const verseNum = verse.verse;
+                    const enText = verse.text || '';
+                    // 获取中文（如果有）
+                    let zhText = '';
+                    if (zhData && zhData[verseNum]) {
+                        zhText = zhData[verseNum];
+                    }
+
+                    const zhWithBadges = zhText ? applyBadges(zhText) : '';
+
+                    html += `<div class="verse-block">`;
+                    html += `<span class="v">${verseNum}</span>`;
+                    if (zhWithBadges) {
+                        html += `<span class="zh">${zhWithBadges}</span>`;
+                    }
+                    html += `<span class="en">${enText}</span>`;
+                    html += `</div>`;
+                });
+
+                hideLoading();
+                document.getElementById('verseDisplay').innerHTML = html;
+                loadNote(bookId, chapter);
+                generateInsights(bookId, chapter);
+
+            } catch (error) {
+                console.warn('API加载失败，使用备用数据:', error);
+
+                // 尝试使用备用数据
+                if (bookId === 'gen' && FALLBACK_DATA[chapter]) {
+                    const zhData = FALLBACK_DATA[chapter];
+                    let html = '';
+                    const keys = Object.keys(zhData).sort((a, b) => parseInt(a) - parseInt(b));
+                    keys.forEach(key => {
+                        const text = applyBadges(zhData[key]);
+                        html += `<div class="verse-block">`;
+                        html += `<span class="v">${key}</span>`;
+                        html += `<span class="zh">${text}</span>`;
+                        html += `</div>`;
+                    });
+                    hideLoading();
+                    document.getElementById('verseDisplay').innerHTML = html;
+                    document.getElementById('verseDisplay').innerHTML +=
+                        `<p style="color:var(--text-muted);font-size:13px;margin-top:12px;border-top:1px solid var(--border-color);padding-top:8px;">📌 当前显示备用数据（中文），英文暂不可用</p>`;
+                    loadNote(bookId, chapter);
+                    generateInsights(bookId, chapter);
+                } else {
+                    // 完全无数据
+                    showError();
+                    document.getElementById('retryBtn').onclick = () => loadChapter(bookId, chapter);
+                }
+            }
+
+            isLoading = false;
         }
 
+        // ============================================================
+        // 6. 侧边栏
+        // ============================================================
         function renderSidebar() {
             const sidebar = document.getElementById('sidebar');
             let html = '';
@@ -1031,7 +1189,12 @@
             sidebar.querySelectorAll('.book-item').forEach(el => {
                 el.addEventListener('click', () => {
                     const id = el.dataset.id;
-                    if (id) loadBook(id, 1);
+                    if (id) {
+                        currentBookId = id;
+                        currentChapter = 1;
+                        renderSidebar();
+                        loadChapter(id, 1);
+                    }
                 });
             });
         }
@@ -1058,7 +1221,7 @@
         }
 
         // ============================================================
-        // 8. AI洞察（备用内容）
+        // 8. AI洞察
         // ============================================================
         function generateInsights(bookId, chapter) {
             const fallbacks = {
@@ -1168,7 +1331,7 @@
         // ============================================================
         document.addEventListener('DOMContentLoaded', () => {
             renderSidebar();
-            loadBook('gen', 1);
+            loadChapter('gen', 1);
             updateProgress();
 
             // 字号
