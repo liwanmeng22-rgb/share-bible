@@ -240,6 +240,68 @@
             border-radius: 10px;
             transition: width 0.5s;
         }
+        .progress-toggle {
+            cursor: pointer;
+            font-size: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            padding: 2px 12px;
+            transition: 0.2s;
+            color: var(--text-secondary);
+        }
+        .progress-toggle:hover {
+            background: var(--border-color);
+        }
+
+        /* ===== 每日读经计划展开面板 ===== */
+        .reading-plan-panel {
+            display: none;
+            padding: 12px 24px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            max-height: 300px;
+            overflow-y: auto;
+            transition: background 0.3s;
+        }
+        .reading-plan-panel.open {
+            display: block;
+        }
+        .reading-plan-panel .plan-day {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 8px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .reading-plan-panel .plan-day:hover {
+            background: var(--bg-app);
+        }
+        .reading-plan-panel .plan-day .day-num {
+            font-weight: 600;
+            color: var(--accent);
+            min-width: 40px;
+        }
+        .reading-plan-panel .plan-day .day-reading {
+            flex: 1;
+        }
+        .reading-plan-panel .plan-day .day-status {
+            font-size: 12px;
+        }
+        .reading-plan-panel .plan-day .day-status.done {
+            color: #27ae60;
+        }
+        .reading-plan-panel .plan-day .day-status.today {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .reading-plan-panel .plan-day .day-status.pending {
+            color: var(--text-muted);
+        }
 
         .main {
             display: flex;
@@ -422,7 +484,7 @@
         }
         .insight-card p {
             font-size: 14px;
-            line-height: 1.7;
+            line-height: 1.8;
             color: var(--text-secondary);
         }
         .insight-card .placeholder {
@@ -446,9 +508,19 @@
         }
         .thought-card p {
             font-size: 15px;
-            line-height: 1.8;
+            line-height: 1.9;
             color: var(--text-primary);
             margin-top: 4px;
+        }
+        .thought-card .thought-question {
+            display: block;
+            margin-top: 10px;
+            padding: 10px 14px;
+            background: var(--bg-app);
+            border-radius: 10px;
+            border-left: 3px solid var(--accent);
+            font-style: italic;
+            color: var(--text-secondary);
         }
 
         .refresh-btn {
@@ -724,6 +796,10 @@
                 max-width: 92%;
                 padding: 16px 16px;
             }
+            .reading-plan-panel {
+                padding: 8px 14px;
+                max-height: 200px;
+            }
         }
     </style>
 </head>
@@ -768,8 +844,14 @@
             <div class="progress-track">
                 <div class="progress-fill" id="progressFill" style="width:0%"></div>
             </div>
-            <span id="progressText">0 / 1189 章</span>
+            <span id="progressText">0 / 260 章（新约）</span>
             <span style="font-size:11px;color:var(--text-muted);" id="progressDay">第 0 天</span>
+            <button class="progress-toggle" id="planToggleBtn">📋 展开</button>
+        </div>
+
+        <!-- ===== 每日读经计划展开面板 ===== -->
+        <div class="reading-plan-panel" id="readingPlanPanel">
+            <div id="planList"></div>
         </div>
 
         <div class="main">
@@ -800,7 +882,7 @@
                         </div>
                     </div>
                     <div class="thought-card" id="thoughtCard">
-                        <div class="label">📝 阅读思考</div>
+                        <div class="label">💭 深度阅读思考</div>
                         <p class="placeholder">加载中...</p>
                     </div>
                     <button class="refresh-btn" id="refreshInsightBtn">🔄 刷新内容</button>
@@ -823,7 +905,7 @@
 
         <div class="footer-disclaimer">
             <strong>📌 本站声明：</strong> 本网站所有内容仅供 <strong>学术研究、文学阅读及历史文化学习</strong> 之用，不构成任何宗教传教、信仰劝导或仪式指导。
-            <span style="display:block;margin-top:4px;font-size:10px;">📚 数据版本：和合本 + WEB（中英文对照）· 全部66卷</span>
+            <span style="display:block;margin-top:4px;font-size:10px;">📚 数据版本：和合本 + WEB（中英文对照）· 创世记第1章</span>
         </div>
     </div>
 
@@ -913,13 +995,18 @@
             { id: 'rev', name: '启示录', group: '启示文学', abbrev: '启', chapters: 22 }
         ];
 
-        const TOTAL_CHAPTERS = BIBLE_BOOKS.reduce((s, b) => s + b.chapters, 0);
+        // 新约书籍列表（用于读经计划）
+        const NT_BOOKS = BIBLE_BOOKS.filter(b =>
+            ['福音书', '历史书(新约)', '保罗书信', '普通书信', '启示文学'].includes(b.group)
+        );
 
         // ============================================================
-        // 2. 数据容器（从外部文件加载）
+        // 2. 数据容器
         // ============================================================
-        // bible-data.js 会定义 window.BIBLE_DATA
         let BIBLE_DATA = {};
+        let currentBookId = 'gen';
+        let currentChapter = 1;
+        let dataLoaded = false;
 
         // ============================================================
         // 3. 人物词典
@@ -988,10 +1075,6 @@
         // ============================================================
         // 4. 核心功能
         // ============================================================
-        let currentBookId = 'gen';
-        let currentChapter = 1;
-        let dataLoaded = false;
-
         function applyBadges(text) {
             let result = text;
             for (const [name] of Object.entries(PERSON_DICT)) {
@@ -1053,7 +1136,7 @@
             }
 
             loadNote(bookId, chapter);
-            generateInsights(bookId);
+            generateInsights(bookId, chapter);
         }
 
         function renderSidebar() {
@@ -1101,26 +1184,178 @@
         }
 
         // ============================================================
-        // 6. 洞察
+        // 6. 深度阅读思考
         // ============================================================
-        const INSIGHTS = {
-            'gen': {
-                history: '创世记是希伯来圣经的第一卷书，传统认为作者为摩西，约主前15-13世纪成书。该卷书记载了从创造到埃及寄居的古代近东叙事，是理解整部圣经的基础。',
-                story: '创世记中的族长叙事（亚伯拉罕、以撒、雅各、约瑟）构成一个连续的家族史，与出埃及记形成叙事衔接。该书的文学结构以"toledot"（后代）为标记，形成清晰的段落。',
-                thought: '创世记以"起初"开篇，探讨了秩序与混沌、承诺与考验、家庭与民族等永恒主题。其叙事手法对后世文学产生了深远影响，是人类思想史的重要文献。'
+        const DEEP_INSIGHTS = {
+            'gen_1': {
+                history: '创世记第1章是希伯来圣经的开篇，传统认为成书于摩西时代（约主前15-13世纪）。这一章的文学形式极具特色，采用六日结构，每日以"有晚上，有早晨"收尾，形成清晰的时间框架。这种结构在古代近东文献中独树一帜，展现了希伯来文学对秩序与节奏的独特追求。',
+                story: '创世记第1章的叙事与古代近东的其他创世神话（如巴比伦的《埃努玛·埃利什》）形成鲜明对比。后者强调众神之间的冲突与暴力，而本章则呈现一位超越性的神，通过话语创造秩序。这种"话语创造"的主题在后续的圣经叙事中反复出现，成为理解圣经世界观的关键线索。',
+                thought: '🔹 "起初"这个词开启了一个宏大的叙事框架。它不是在讨论宇宙的"如何"起源，而是在宣告一个根本性的主张：一切存在都有其源头，这个源头具有意志与目的。\n\n🔹 光的创造先于光体的创造（第3节 vs 第14节），暗示了一个重要的哲学命题：光作为一种原则或秩序，优先于其物理载体。这让人思考：我们所见的物质世界背后，是否存在着更深层的意义结构？\n\n🔹 "神看着是好的"出现了七次。这不仅是美学判断，更是对创造本身的肯定。在一个充斥着混沌与虚无的古代世界观中，这种对存在的积极肯定具有深远的意义。\n\n🔹 人类作为"神的形象"被创造（第26节），意味着人被赋予了一种超越其他受造物的尊严与责任。这个形象不是静态的赋予，而是一种动态的呼召——人受邀参与对世界的管理，成为秩序的维护者而非破坏者。',
+                questions: '💭 当我们说"世界是有意义的"时，这个信念建立在什么样的基础之上？\n💭 "管理"与"控制"有什么区别？在人与世界的关系中，我们应该扮演什么样的角色？\n💭 如果"光"象征着对真理的寻求，那么今天的我们如何在自己的生活中"寻找光"？'
             }
         };
 
-        function generateInsights(bookId) {
-            const data = INSIGHTS[bookId] || INSIGHTS['gen'];
-            document.querySelector('#historyCard p').innerHTML = data.history;
-            document.querySelector('#storyCard p').innerHTML = data.story;
-            document.querySelector('#futureCard p').innerHTML = data.thought;
-            document.querySelector('#thoughtCard p').innerHTML = data.thought;
+        function generateInsights(bookId, chapter) {
+            const key = `${bookId}_${chapter}`;
+            const data = DEEP_INSIGHTS[key];
+
+            if (data) {
+                document.querySelector('#historyCard p').innerHTML = data.history;
+                document.querySelector('#storyCard p').innerHTML = data.story;
+                // 文本指向使用历史背景的延伸
+                document.querySelector('#futureCard p').innerHTML = data.history.split('。')[0] +
+                    '。这一叙事框架对后世的神学、哲学与文学产生了深远的影响，成为西方文明探讨"起源"与"秩序"问题的经典文本。';
+
+                // 阅读思考：包含多段思考 + 问题
+                let thoughtHtml = data.thought.replace(/\n/g, '<br>');
+                if (data.questions) {
+                    thoughtHtml += `<span class="thought-question">🧠 延伸思考：<br>${data.questions.replace(/\n/g, '<br>')}</span>`;
+                }
+                document.querySelector('#thoughtCard p').innerHTML = thoughtHtml;
+            } else {
+                // 默认内容
+                document.querySelector('#historyCard p').innerHTML = '该卷书的历史背景资料正在完善中...';
+                document.querySelector('#storyCard p').innerHTML = '文学关联分析正在准备中...';
+                document.querySelector('#futureCard p').innerHTML = '文本的深远意义正在梳理中...';
+                document.querySelector('#thoughtCard p').innerHTML =
+                    '📖 阅读圣经文献时，建议关注叙事结构、人物关系与主题发展。每个文本都承载着特定的历史语境与思想传统，需要耐心解读。';
+            }
         }
 
         // ============================================================
-        // 7. 搜索
+        // 7. 每日读经计划（新约260章，一年读完）
+        // ============================================================
+        function generateReadingPlan() {
+            // 新约260章，分配到365天，每天约0.7章
+            // 实际按顺序分配：每天1-2章，周末少一些
+            const plan = [];
+            let day = 1;
+            let chapterIndex = 0;
+
+            // 构建新约章节顺序列表
+            const ntChapterList = [];
+            NT_BOOKS.forEach(book => {
+                for (let ch = 1; ch <= book.chapters; ch++) {
+                    ntChapterList.push({
+                        bookId: book.id,
+                        bookAbbrev: book.abbrev,
+                        chapter: ch
+                    });
+                }
+            });
+
+            const totalNTChapters = ntChapterList.length; // 260
+
+            while (chapterIndex < totalNTChapters) {
+                // 每天读2-3章（工作日多读，周末少读）
+                const isWeekend = (day % 7 === 0 || day % 7 === 6);
+                const dailyCount = isWeekend ? 1 : 2;
+
+                let dayChapters = [];
+                for (let i = 0; i < dailyCount && chapterIndex < totalNTChapters; i++) {
+                    dayChapters.push(ntChapterList[chapterIndex]);
+                    chapterIndex++;
+                }
+
+                // 如果剩余章节少于每日阅读量，全部读完
+                if (chapterIndex >= totalNTChapters && dayChapters.length === 0 && day > 1) {
+                    break;
+                }
+
+                plan.push({
+                    day: day,
+                    chapters: dayChapters,
+                    done: false
+                });
+                day++;
+            }
+
+            // 如果还有剩余天数，填充"已完成"
+            while (plan.length < 365) {
+                plan.push({
+                    day: plan.length + 1,
+                    chapters: [],
+                    done: true
+                });
+            }
+
+            return plan;
+        }
+
+        let readingPlan = [];
+
+        function initReadingPlan() {
+            readingPlan = generateReadingPlan();
+
+            // 计算已读进度（基于当前日期）
+            const now = new Date();
+            const start = new Date(now.getFullYear(), 0, 1);
+            const dayOfYear = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
+
+            // 标记今天及之前为已完成（实际应该基于用户阅读记录，这里简化为基于日期）
+            readingPlan.forEach((p, idx) => {
+                if (idx + 1 <= dayOfYear) {
+                    p.done = true;
+                }
+                if (idx + 1 === dayOfYear) {
+                    p.isToday = true;
+                }
+            });
+
+            // 更新进度条
+            const readChapters = readingPlan.filter(p => p.done).reduce((sum, p) => sum + p.chapters.length, 0);
+            const total = 260;
+            const percent = (readChapters / total * 100).toFixed(1);
+
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressText').textContent = `${readChapters} / ${total} 章（新约）`;
+            document.getElementById('progressDay').textContent = `第 ${dayOfYear} 天`;
+
+            // 渲染计划列表
+            renderPlanList();
+        }
+
+        function renderPlanList() {
+            const container = document.getElementById('planList');
+            let html = '';
+
+            readingPlan.forEach((p, idx) => {
+                const dayLabel = p.chapters.length > 0 ?
+                    p.chapters.map(c => `${c.bookAbbrev} ${c.chapter}`).join('、') :
+                    '🎉 已完成全部新约！';
+
+                let statusClass = 'pending';
+                let statusText = '⏳ 待读';
+                if (p.isToday) {
+                    statusClass = 'today';
+                    statusText = '📌 今日';
+                } else if (p.done && p.chapters.length > 0) {
+                    statusClass = 'done';
+                    statusText = '✅ 已读';
+                } else if (p.chapters.length === 0) {
+                    statusClass = 'done';
+                    statusText = '🎉 完成';
+                }
+
+                // 点击跳转到对应章节
+                const onClick = p.chapters.length > 0 ?
+                    `onclick="loadChapter('${p.chapters[0].bookId}', ${p.chapters[0].chapter})"` :
+                    '';
+
+                html += `
+                    <div class="plan-day" ${onClick}>
+                        <span class="day-num">第${p.day}天</span>
+                        <span class="day-reading">📖 ${dayLabel}</span>
+                        <span class="day-status ${statusClass}">${statusText}</span>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // ============================================================
+        // 8. 搜索
         // ============================================================
         function performSearch() {
             const query = document.getElementById('searchInput').value.trim();
@@ -1191,7 +1426,7 @@
         }
 
         // ============================================================
-        // 8. 弹出
+        // 9. 弹出
         // ============================================================
         function showPopup(type, name) {
             const overlay = document.getElementById('popupOverlay');
@@ -1219,62 +1454,62 @@
         }
 
         // ============================================================
-        // 9. 进度
+        // 10. 展开/折叠读经计划
         // ============================================================
-        function updateProgress() {
-            const now = new Date();
-            const start = new Date(now.getFullYear(), 0, 1);
-            const dayOfYear = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
-            const chaptersPerDay = TOTAL_CHAPTERS / 365;
-            const readChapters = Math.min(Math.floor(dayOfYear * chaptersPerDay), TOTAL_CHAPTERS);
-            const percent = (readChapters / TOTAL_CHAPTERS * 100).toFixed(1);
+        let planOpen = false;
 
-            document.getElementById('progressFill').style.width = percent + '%';
-            document.getElementById('progressText').textContent = `${readChapters} / ${TOTAL_CHAPTERS} 章`;
-            document.getElementById('progressDay').textContent = `第 ${dayOfYear} 天`;
+        function togglePlan() {
+            planOpen = !planOpen;
+            const panel = document.getElementById('readingPlanPanel');
+            const btn = document.getElementById('planToggleBtn');
+            if (planOpen) {
+                panel.classList.add('open');
+                btn.textContent = '📋 收起';
+            } else {
+                panel.classList.remove('open');
+                btn.textContent = '📋 展开';
+            }
         }
 
         // ============================================================
-        // 10. 数据加载完成后的初始化
+        // 11. 数据加载完成后的初始化
         // ============================================================
         function initApp() {
             if (!dataLoaded) {
-                // 等待数据加载
                 setTimeout(initApp, 100);
                 return;
             }
             renderSidebar();
             loadChapter('gen', 1);
-            updateProgress();
+            initReadingPlan();
+
+            // 添加计划切换事件
+            document.getElementById('planToggleBtn').addEventListener('click', togglePlan);
         }
 
         // 监听数据加载完成
-        function onDataLoaded() {
-            dataLoaded = true;
-            initApp();
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkData = setInterval(function() {
+                if (window.BIBLE_DATA && Object.keys(window.BIBLE_DATA).length > 0) {
+                    BIBLE_DATA = window.BIBLE_DATA;
+                    dataLoaded = true;
+                    clearInterval(checkData);
+                    initApp();
+                }
+            }, 200);
 
-        // 如果数据已经加载完成，立即初始化
-        if (window.BIBLE_DATA && Object.keys(window.BIBLE_DATA).length > 0) {
-            BIBLE_DATA = window.BIBLE_DATA;
-            dataLoaded = true;
-            document.addEventListener('DOMContentLoaded', initApp);
-        } else {
-            // 等待 script 加载
-            document.addEventListener('DOMContentLoaded', function() {
-                const checkData = setInterval(function() {
-                    if (window.BIBLE_DATA && Object.keys(window.BIBLE_DATA).length > 0) {
-                        BIBLE_DATA = window.BIBLE_DATA;
-                        dataLoaded = true;
-                        clearInterval(checkData);
-                        initApp();
-                    }
-                }, 200);
-            });
-        }
+            // 如果10秒后还没加载完成，强制初始化（使用空数据）
+            setTimeout(function() {
+                if (!dataLoaded) {
+                    BIBLE_DATA = window.BIBLE_DATA || {};
+                    dataLoaded = true;
+                    initApp();
+                }
+            }, 10000);
+        });
 
         // ============================================================
-        // 11. UI 事件绑定
+        // 12. UI 事件绑定
         // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
 
@@ -1317,7 +1552,8 @@
             document.getElementById('noteInput').addEventListener('blur', () => saveNote(currentBookId, currentChapter));
 
             // 刷新洞察
-            document.getElementById('refreshInsightBtn').addEventListener('click', () => generateInsights(currentBookId));
+            document.getElementById('refreshInsightBtn').addEventListener('click', () => generateInsights(currentBookId,
+                currentChapter));
 
             // 角标点击
             document.getElementById('verseDisplay').addEventListener('click', (e) => {
@@ -1329,8 +1565,6 @@
             document.getElementById('closePopup').addEventListener('click', hidePopup);
             document.getElementById('popupOverlay').addEventListener('click', hidePopup);
             document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hidePopup(); });
-
-            setInterval(updateProgress, 60000);
         });
     </script>
 
