@@ -308,7 +308,7 @@
             min-height: 55vh;
         }
         .sidebar {
-            width: 200px;
+            width: 220px;
             background: var(--bg-sidebar);
             border-right: 1px solid var(--border-color);
             padding: 12px 0;
@@ -340,6 +340,24 @@
             border-left-color: var(--accent);
         }
         .book-item.active {
+            background: var(--bg-card);
+            border-left-color: var(--accent);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .chapter-item {
+            padding: 3px 14px 3px 28px !important;
+            cursor: pointer;
+            font-size: 12px !important;
+            color: var(--text-muted);
+            transition: 0.1s;
+            border-left: 3px solid transparent;
+        }
+        .chapter-item:hover {
+            background: var(--border-color);
+            border-left-color: var(--accent);
+        }
+        .chapter-item.active {
             background: var(--bg-card);
             border-left-color: var(--accent);
             font-weight: 600;
@@ -740,7 +758,7 @@
             }
             .sidebar {
                 width: 100%;
-                max-height: 160px;
+                max-height: 200px;
                 border-right: none;
                 border-bottom: 1px solid var(--border-color);
                 display: flex;
@@ -766,6 +784,18 @@
             }
             .book-item.active {
                 border-left: none;
+                background: var(--accent);
+                color: #fff;
+            }
+            .chapter-item {
+                display: inline-block !important;
+                padding: 2px 8px !important;
+                font-size: 11px !important;
+                border-left: none !important;
+                border-radius: 12px;
+                margin-left: 6px;
+            }
+            .chapter-item.active {
                 background: var(--accent);
                 color: #fff;
             }
@@ -1145,17 +1175,49 @@
                 html += `<div class="sidebar-group"><h4>${g}</h4>`;
                 BIBLE_BOOKS.filter(b => b.group === g).forEach(b => {
                     const active = b.id === currentBookId ? 'active' : '';
-                    const hasData = BIBLE_DATA[b.id] ? '' : ' style="opacity:0.6;"';
-                    html +=
-                        `<div class="book-item ${active}" data-id="${b.id}"${hasData}>${b.abbrev} ${b.name}</div>`;
+                    const hasData = BIBLE_DATA[b.id] ? true : false;
+                    html += `<div class="book-item ${active}" data-id="${b.id}" style="${hasData ? '' : 'opacity:0.6;'}">${b.abbrev} ${b.name}</div>`;
+                    
+                    // 如果有数据且是当前选中的书，显示章节列表
+                    if (b.id === currentBookId && hasData) {
+                        const chapters = BIBLE_DATA[b.id].chapters || {};
+                        const chapterKeys = Object.keys(chapters).sort((a, b) => parseInt(a) - parseInt(b));
+                        html += `<div style="padding:2px 0;">`;
+                        chapterKeys.forEach(ch => {
+                            const isActive = parseInt(ch) === currentChapter ? 'active' : '';
+                            html += `<div class="chapter-item ${isActive}" data-book="${b.id}" data-chapter="${ch}">第${ch}章</div>`;
+                        });
+                        html += `</div>`;
+                    }
                 });
                 html += '</div>';
             });
             sidebar.innerHTML = html;
-            sidebar.querySelectorAll('.book-item').forEach(el => {
+            
+            // 绑定书卷点击事件
+            sidebar.querySelectorAll('.book-item:not(.chapter-item)').forEach(el => {
                 el.addEventListener('click', () => {
                     const id = el.dataset.id;
-                    if (id) loadChapter(id, 1);
+                    if (id) {
+                        const hasData = BIBLE_DATA[id] ? true : false;
+                        if (hasData) {
+                            loadChapter(id, 1);
+                        } else {
+                            loadChapter(id, 1);
+                        }
+                    }
+                });
+            });
+            
+            // 绑定章节点击事件
+            sidebar.querySelectorAll('.chapter-item').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const bookId = el.dataset.book;
+                    const chapter = parseInt(el.dataset.chapter);
+                    if (bookId && chapter) {
+                        loadChapter(bookId, chapter);
+                    }
                 });
             });
         }
