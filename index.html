@@ -254,7 +254,6 @@
             background: var(--border-color);
         }
 
-        /* ===== 每日读经计划展开面板 ===== */
         .reading-plan-panel {
             display: none;
             padding: 12px 24px;
@@ -849,7 +848,6 @@
             <button class="progress-toggle" id="planToggleBtn">📋 展开</button>
         </div>
 
-        <!-- ===== 每日读经计划展开面板 ===== -->
         <div class="reading-plan-panel" id="readingPlanPanel">
             <div id="planList"></div>
         </div>
@@ -905,7 +903,7 @@
 
         <div class="footer-disclaimer">
             <strong>📌 本站声明：</strong> 本网站所有内容仅供 <strong>学术研究、文学阅读及历史文化学习</strong> 之用，不构成任何宗教传教、信仰劝导或仪式指导。
-            <span style="display:block;margin-top:4px;font-size:10px;">📚 数据版本：和合本 + WEB（中英文对照）· 创世记第1章</span>
+            <span style="display:block;margin-top:4px;font-size:10px;">📚 数据版本：和合本 + WEB（中英文对照）· 创世记第1-10章</span>
         </div>
     </div>
 
@@ -1184,7 +1182,6 @@
         }
 
         // ============================================================
-                // ============================================================
         // 6. 深度阅读思考
         // ============================================================
         const DEEP_INSIGHTS = {
@@ -1257,18 +1254,15 @@
             if (data) {
                 document.querySelector('#historyCard p').innerHTML = data.history;
                 document.querySelector('#storyCard p').innerHTML = data.story;
-                // 文本指向使用历史背景的延伸
                 document.querySelector('#futureCard p').innerHTML = data.history.split('。')[0] +
                     '。这一叙事框架对后世的神学、哲学与文学产生了深远的影响，成为西方文明探讨"起源"与"秩序"问题的经典文本。';
 
-                // 阅读思考：包含多段思考 + 问题
                 let thoughtHtml = data.thought.replace(/\n/g, '<br>');
                 if (data.questions) {
                     thoughtHtml += `<span class="thought-question">🧠 延伸思考：<br>${data.questions.replace(/\n/g, '<br>')}</span>`;
                 }
                 document.querySelector('#thoughtCard p').innerHTML = thoughtHtml;
             } else {
-                // 默认内容
                 document.querySelector('#historyCard p').innerHTML = '该卷书的历史背景资料正在完善中...';
                 document.querySelector('#storyCard p').innerHTML = '文学关联分析正在准备中...';
                 document.querySelector('#futureCard p').innerHTML = '文本的深远意义正在梳理中...';
@@ -1281,13 +1275,10 @@
         // 7. 每日读经计划（新约260章，一年读完）
         // ============================================================
         function generateReadingPlan() {
-            // 新约260章，分配到365天，每天约0.7章
-            // 实际按顺序分配：每天1-2章，周末少一些
             const plan = [];
             let day = 1;
             let chapterIndex = 0;
 
-            // 构建新约章节顺序列表
             const ntChapterList = [];
             NT_BOOKS.forEach(book => {
                 for (let ch = 1; ch <= book.chapters; ch++) {
@@ -1299,10 +1290,9 @@
                 }
             });
 
-            const totalNTChapters = ntChapterList.length; // 260
+            const totalNTChapters = ntChapterList.length;
 
             while (chapterIndex < totalNTChapters) {
-                // 每天读2-3章（工作日多读，周末少读）
                 const isWeekend = (day % 7 === 0 || day % 7 === 6);
                 const dailyCount = isWeekend ? 1 : 2;
 
@@ -1312,7 +1302,6 @@
                     chapterIndex++;
                 }
 
-                // 如果剩余章节少于每日阅读量，全部读完
                 if (chapterIndex >= totalNTChapters && dayChapters.length === 0 && day > 1) {
                     break;
                 }
@@ -1325,7 +1314,6 @@
                 day++;
             }
 
-            // 如果还有剩余天数，填充"已完成"
             while (plan.length < 365) {
                 plan.push({
                     day: plan.length + 1,
@@ -1342,12 +1330,10 @@
         function initReadingPlan() {
             readingPlan = generateReadingPlan();
 
-            // 计算已读进度（基于当前日期）
             const now = new Date();
             const start = new Date(now.getFullYear(), 0, 1);
             const dayOfYear = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
 
-            // 标记今天及之前为已完成（实际应该基于用户阅读记录，这里简化为基于日期）
             readingPlan.forEach((p, idx) => {
                 if (idx + 1 <= dayOfYear) {
                     p.done = true;
@@ -1357,7 +1343,6 @@
                 }
             });
 
-            // 更新进度条
             const readChapters = readingPlan.filter(p => p.done).reduce((sum, p) => sum + p.chapters.length, 0);
             const total = 260;
             const percent = (readChapters / total * 100).toFixed(1);
@@ -1366,7 +1351,6 @@
             document.getElementById('progressText').textContent = `${readChapters} / ${total} 章（新约）`;
             document.getElementById('progressDay').textContent = `第 ${dayOfYear} 天`;
 
-            // 渲染计划列表
             renderPlanList();
         }
 
@@ -1392,7 +1376,6 @@
                     statusText = '🎉 完成';
                 }
 
-                // 点击跳转到对应章节
                 const onClick = p.chapters.length > 0 ?
                     `onclick="loadChapter('${p.chapters[0].bookId}', ${p.chapters[0].chapter})"` :
                     '';
@@ -1538,7 +1521,6 @@
             loadChapter('gen', 1);
             initReadingPlan();
 
-            // 添加计划切换事件
             document.getElementById('planToggleBtn').addEventListener('click', togglePlan);
         }
 
@@ -1553,7 +1535,6 @@
                 }
             }, 200);
 
-            // 如果10秒后还没加载完成，强制初始化（使用空数据）
             setTimeout(function() {
                 if (!dataLoaded) {
                     BIBLE_DATA = window.BIBLE_DATA || {};
