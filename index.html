@@ -797,7 +797,26 @@ async function callWorker(messages, options = {}) {
 }
 
 // ============================================================
-// 加载章节
+// 渲染经文（独立函数）
+// ============================================================
+function renderChapter(result, display) {
+    if (result.verses && result.verses.length > 0) {
+        let html = '';
+        result.verses.forEach(v => {
+            html += `<div class="verse-block">`;
+            html += `<span class="v">${v.verse}</span>`;
+            html += `<span class="zh">${v.zh || ''}</span>`;
+            if (v.en) html += `<span class="en">${v.en}</span>`;
+            html += `</div>`;
+        });
+        display.innerHTML = html;
+    } else {
+        display.innerHTML = `<p style="color:var(--text-muted);">暂无经文数据</p>`;
+    }
+}
+
+// ============================================================
+// 加载章节（带缓存）
 // ============================================================
 async function loadChapter(bookId, chapter) {
     currentBookId = bookId;
@@ -809,6 +828,30 @@ async function loadChapter(bookId, chapter) {
     renderSidebar();
 
     const display = document.getElementById('verseDisplay');
+    
+    // ===== 检查缓存 =====
+    const cacheKey = `${bookId}_${chapter}`;
+    const cached = localStorage.getItem(cacheKey);
+    
+    if (cached) {
+        try {
+            const data = JSON.parse(cached);
+            renderChapter(data, display);
+            document.querySelector('#historyCard p').textContent = data.history || '已缓存';
+            document.querySelector('#storyCard p').textContent = data.story || '已缓存';
+            document.querySelector('#futureCard p').textContent = data.thought ? data.thought.substring(0, 100) + '...' : '已缓存';
+            if (data.thought) {
+                const thoughtHtml = data.thought.replace(/\n/g, '<br>');
+                document.querySelector('#thoughtCard p').innerHTML = thoughtHtml;
+            }
+            loadNote(bookId, chapter);
+            return;
+        } catch (e) {
+            console.warn('缓存解析失败，重新生成');
+        }
+    }
+
+    // ===== 没有缓存，显示加载动画 =====
     display.innerHTML = `
         <div class="loading-container">
             <div class="sheep">🐑</div>
@@ -847,37 +890,36 @@ async function loadChapter(bookId, chapter) {
             { role: 'user', content: prompt }
         ]);
 
-        // 解析 JSON
+        // ===== 解析 JSON（增强健壮性） =====
         let result;
         try {
-            const content = data.choices[0].message.content;
-            const jsonMatch = content.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-                result = JSON.parse(jsonMatch[0]);
-            } else {
+            let content = data.choices[0].message.content;
+            // 尝试直接解析
+            try {
                 result = JSON.parse(content);
+            } catch (e) {
+                // 如果直接解析失败，尝试提取 JSON
+                const jsonMatch = content.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    result = JSON.parse(jsonMatch[0]);
+                } else {
+                    throw new Error('未找到有效的 JSON');
+                }
             }
         } catch (e) {
             console.error('JSON解析失败:', e);
-            display.innerHTML = `<p style="color:var(--text-secondary);white-space:pre-wrap;">${data.choices[0].message.content}</p>`;
+            display.innerHTML = `<p style="color:var(--text-secondary);white-space:pre-wrap;">数据解析失败，请重试</p>`;
             return;
         }
 
-        // 渲染经文
-        if (result.verses && result.verses.length > 0) {
-            let html = '';
-            result.verses.forEach(v => {
-                html += `<div class="verse-block">`;
-                html += `<span class="v">${v.verse}</span>`;
-                html += `<span class="zh">${v.zh || ''}</span>`;
-                if (v.en) html += `<span class="en">${v.en}</span>`;
-                html += `</div>`;
-            });
-            display.innerHTML = html;
-        } else {
-            display.innerHTML = `<p style="color:var(--text-muted);">暂无经文数据</p>`;
+        // ===== 保存到缓存 =====
+        try {
+            localStorage.setItem(cacheKey, JSON.stringify(result));
+        } catch (e) {
+            console.warn('缓存保存失败（可能数据太大）:', e);
         }
 
+        renderChapter(result, display);
         if (result.history) document.querySelector('#historyCard p').textContent = result.history;
         if (result.story) document.querySelector('#storyCard p').textContent = result.story;
         if (result.thought) {
