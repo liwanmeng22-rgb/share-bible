@@ -639,14 +639,16 @@
         <div class="content" id="contentArea">
             <div class="breadcrumb" id="breadcrumb">📂 旧约 / <span>创世记</span> 第 1 章</div>
             <div class="search-results" id="searchResults"></div>
-            <div class="verse-text" id="verseDisplay"></div>
+            <div class="verse-text" id="verseDisplay">
+                <div class="loading-container"><div class="sheep">🐑</div><div class="loading-text">AI 正在生成经文<span class="loading-dots"></span></div></div>
+            </div>
             <div class="insight-panel" id="insightPanel">
                 <div class="insight-row">
-                    <div class="insight-card" id="historyCard"><div class="label">🏛️ 历史背景</div><p class="placeholder">加载中...</p></div>
-                    <div class="insight-card" id="storyCard"><div class="label">📜 文学关联</div><p class="placeholder">加载中...</p></div>
-                    <div class="insight-card" id="futureCard"><div class="label">🔮 文本指向</div><p class="placeholder">加载中...</p></div>
+                    <div class="insight-card" id="historyCard"><div class="label">🏛️ 历史背景</div><p class="placeholder">AI 正在生成...</p></div>
+                    <div class="insight-card" id="storyCard"><div class="label">📜 文学关联</div><p class="placeholder">AI 正在生成...</p></div>
+                    <div class="insight-card" id="futureCard"><div class="label">🔮 文本指向</div><p class="placeholder">AI 正在生成...</p></div>
                 </div>
-                <div class="thought-card" id="thoughtCard"><div class="label">💭 深度阅读思考</div><p class="placeholder">加载中...</p></div>
+                <div class="thought-card" id="thoughtCard"><div class="label">💭 深度阅读思考</div><p class="placeholder">AI 正在生成...</p></div>
                 <button class="refresh-btn" id="refreshInsightBtn">🔄 刷新内容</button>
             </div>
 
@@ -671,7 +673,7 @@
     </div>
     <div class="footer-disclaimer">
         <strong>📌 本站声明：</strong> 本网站所有内容仅供 <strong>学术研究、文学阅读及历史文化学习</strong> 之用。
-        <span style="display:block;margin-top:4px;font-size:10px;">📚 创世记1-10章本地数据 · 其他章节由 DeepSeek AI 生成</span>
+        <span style="display:block;margin-top:4px;font-size:10px;">🤖 由 DeepSeek API 驱动 · 实时生成</span>
     </div>
 </div>
 
@@ -685,7 +687,7 @@
 
 <script>
 // ============================================================
-// 1. 圣经书籍列表（66卷）
+// 圣经书籍列表（66卷）
 // ============================================================
 const BIBLE_BOOKS = [
     { id: 'gen', name: '创世记', group: '摩西五经', abbrev: '创', chapters: 50 },
@@ -761,105 +763,23 @@ const NT_BOOKS = BIBLE_BOOKS.filter(b =>
 );
 
 // ============================================================
-// 2. 创世记 1-10 章完整数据（内置，无需API）
-// ============================================================
-const GENESIS_1_10 = {
-    "1": {
-        "1": {"zh": "起初，神创造天地。", "en": "In the beginning God created the heavens and the earth."},
-        "2": {"zh": "地是空虚混沌，渊面黑暗；神的灵运行在水面上。", "en": "And the earth was waste and void; and darkness was upon the face of the deep: and the Spirit of God moved upon the face of the waters."},
-        "3": {"zh": "神说：要有光，就有了光。", "en": "And God said, Let there be light: and there was light."},
-        "4": {"zh": "神看光是好的，就把光暗分开了。", "en": "And God saw the light, that it was good: and God divided the light from the darkness."},
-        "5": {"zh": "神称光为昼，称暗为夜。有晚上，有早晨，这是头一日。", "en": "And God called the light Day, and the darkness he called Night. And there was evening and there was morning, one day."},
-        "6": {"zh": "神说：诸水之间要有空气，将水分为上下。", "en": "And God said, Let there be a firmament in the midst of the waters, and let it divide the waters from the waters."},
-        "7": {"zh": "神就造出空气，将空气以下的水、空气以上的水分开了。事就这样成了。", "en": "And God made the firmament, and divided the waters which were under the firmament from the waters which were above the firmament: and it was so."},
-        "8": {"zh": "神称空气为天。有晚上，有早晨，是第二日。", "en": "And God called the firmament Heaven. And there was evening and there was morning, a second day."},
-        "9": {"zh": "神说：天下的水要聚在一处，使旱地露出来。事就这样成了。", "en": "And God said, Let the waters under the heavens be gathered together unto one place, and let the dry land appear: and it was so."},
-        "10": {"zh": "神称旱地为地，称水的聚处为海。神看着是好的。", "en": "And God called the dry land Earth; and the gathering together of the waters called he Seas: and God saw that it was good."},
-        "11": {"zh": "神说：地要发生青草和结种子的菜蔬，并结果子的树木，各从其类，果子都包着核。事就这样成了。", "en": "And God said, Let the earth put forth grass, herbs yielding seed, and fruit-trees bearing fruit after their kind, wherein is the seed thereof, upon the earth: and it was so."},
-        "12": {"zh": "于是地发生了青草和结种子的菜蔬，各从其类；并结果子的树木，各从其类；果子都包着核。神看着是好的。", "en": "And the earth brought forth grass, herbs yielding seed after their kind, and trees bearing fruit, wherein is the seed thereof, after their kind: and God saw that it was good."},
-        "13": {"zh": "有晚上，有早晨，是第三日。", "en": "And there was evening and there was morning, a third day."},
-        "14": {"zh": "神说：天上要有光体，可以分昼夜，作记号，定节令、日子、年岁，", "en": "And God said, Let there be lights in the firmament of heaven to divide the day from the night; and let them be for signs, and for seasons, and for days and years:"},
-        "15": {"zh": "并要发光在天空，普照在地上。事就这样成了。", "en": "and let them be for lights in the firmament of heaven to give light upon the earth: and it was so."},
-        "16": {"zh": "于是神造了两个大光，大的管昼，小的管夜，又造众星，", "en": "And God made the two great lights; the greater light to rule the day, and the lesser light to rule the night: he made the stars also."},
-        "17": {"zh": "就把这些光摆列在天空，普照在地上，", "en": "And God set them in the firmament of heaven to give light upon the earth,"},
-        "18": {"zh": "管理昼夜，分别明暗。神看着是好的。", "en": "and to rule over the day and over the night, and to divide the light from the darkness: and God saw that it was good."},
-        "19": {"zh": "有晚上，有早晨，是第四日。", "en": "And there was evening and there was morning, a fourth day."},
-        "20": {"zh": "神说：水要多多滋生有生命的物；要有雀鸟飞在地面以上，天空之中。", "en": "And God said, Let the waters swarm with swarms of living creatures, and let birds fly above the earth in the open firmament of heaven."},
-        "21": {"zh": "神就造出大鱼和水中所滋生各样有生命的动物，各从其类；又造出各样飞鸟，各从其类。神看着是好的。", "en": "And God created the great sea-monsters, and every living creature that moveth, wherewith the waters swarmed, after their kind, and every winged bird after its kind: and God saw that it was good."},
-        "22": {"zh": "神就赐福给这一切，说：滋生繁多，充满海中的水；雀鸟也要多生在地上。", "en": "And God blessed them, saying, Be fruitful, and multiply, and fill the waters in the seas, and let birds multiply on the earth."},
-        "23": {"zh": "有晚上，有早晨，是第五日。", "en": "And there was evening and there was morning, a fifth day."},
-        "24": {"zh": "神说：地要生出活物来，各从其类；牲畜、昆虫、野兽，各从其类。事就这样成了。", "en": "And God said, Let the earth bring forth living creatures after their kind, cattle, and creeping things, and beasts of the earth after their kind: and it was so."},
-        "25": {"zh": "于是神造出野兽，各从其类；牲畜，各从其类；地上一切昆虫，各从其类。神看着是好的。", "en": "And God made the beasts of the earth after their kind, and the cattle after their kind, and everything that creepeth upon the ground after its kind: and God saw that it was good."},
-        "26": {"zh": "神说：我们要照着我们的形像、按着我们的样式造人，使他们管理海里的鱼、空中的鸟、地上的牲畜，和全地，并地上所爬的一切昆虫。", "en": "And God said, Let us make man in our image, after our likeness: and let them have dominion over the fish of the sea, and over the birds of the heavens, and over the cattle, and over all the earth, and over every creeping thing that creepeth upon the earth."},
-        "27": {"zh": "神就照着自己的形像造人，乃是照着他的形像造男造女。", "en": "And God created man in his own image, in the image of God created he him; male and female created he them."},
-        "28": {"zh": "神就赐福给他们，又对他们说：要生养众多，遍满地面，治理这地，也要管理海里的鱼、空中的鸟，和地上各样行动的活物。", "en": "And God blessed them: and God said unto them, Be fruitful, and multiply, and replenish the earth, and subdue it; and have dominion over the fish of the sea, and over the birds of the heavens, and over every living thing that moveth upon the earth."},
-        "29": {"zh": "神说：看哪，我将遍地上一切结种子的菜蔬和一切树上所结有核的果子全赐给你们作食物。", "en": "And God said, Behold, I have given you every herb yielding seed, which is upon the face of all the earth, and every tree, in which is the fruit of a tree yielding seed; to you it shall be for food:"},
-        "30": {"zh": "至于地上的走兽和空中的飞鸟，并各样爬在地上有生命的物，我将青草赐给它们作食物。事就这样成了。", "en": "and to every beast of the earth, and to every bird of the heavens, and to everything that creepeth upon the earth, wherein there is life, I have given every green herb for food: and it was so."},
-        "31": {"zh": "神看着一切所造的都甚好。有晚上，有早晨，是第六日。", "en": "And God saw everything that he had made, and, behold, it was very good. And there was evening and there was morning, the sixth day."}
-    },
-    "2": {
-        "1": {"zh": "天地万物都造齐了。", "en": "And the heavens and the earth were finished, and all the host of them."},
-        "2": {"zh": "到第七日，神造物的工已经完毕，就在第七日歇了他一切的工，安息了。", "en": "And on the seventh day God finished his work which he had made; and he rested on the seventh day from all his work which he had made."},
-        "3": {"zh": "神赐福给第七日，定为圣日；因为在这日，神歇了他一切创造的工，就安息了。", "en": "And God blessed the seventh day, and hallowed it; because that in it he rested from all his work which God had created and made."},
-        "4": {"zh": "创造天地的来历，在耶和华神造天地的日子，乃是这样，", "en": "These are the generations of the heavens and of the earth when they were created, in the day that Jehovah God made earth and heaven."},
-        "5": {"zh": "野地还没有草木，田间的菜蔬还没有长起来；因为耶和华神还没有降雨在地上，也没有人耕地，", "en": "And no plant of the field was yet in the earth, and no herb of the field had yet sprung up; for Jehovah God had not caused it to rain upon the earth: and there was not a man to till the ground;"},
-        "6": {"zh": "但有雾气从地上腾，滋润遍地。", "en": "but there went up a mist from the earth, and watered the whole face of the ground."},
-        "7": {"zh": "耶和华神用地上的尘土造人，将生气吹在他鼻孔里，他就成了有灵的活人，名叫亚当。", "en": "And Jehovah God formed man of the dust of the ground, and breathed into his nostrils the breath of life; and man became a living soul."},
-        "8": {"zh": "耶和华神在东方的伊甸立了一个园子，把所造的人安置在那里。", "en": "And Jehovah God planted a garden eastward, in Eden; and there he put the man whom he had formed."},
-        "9": {"zh": "耶和华神使各样的树从地里长出来，可以悦人的眼目，其上的果子好作食物。园子当中又有生命树和分别善恶的树。", "en": "And out of the ground made Jehovah God to grow every tree that is pleasant to the sight, and good for food; the tree of life also in the midst of the garden, and the tree of the knowledge of good and evil."},
-        "10": {"zh": "有河从伊甸流出来，滋润那园子，从那里分为四道：", "en": "And a river went out of Eden to water the garden; and from thence it was parted, and became four heads."},
-        "11": {"zh": "第一道名叫比逊，就是环绕哈腓拉全地的。在那里有金子，", "en": "The name of the first is Pishon: that is it which compasseth the whole land of Havilah, where there is gold;"},
-        "12": {"zh": "并且那地的金子是好的；在那里又有珍珠和红玛瑙。", "en": "and the gold of that land is good: there is bdellium and the onyx stone."},
-        "13": {"zh": "第二道河名叫基训，就是环绕古实全地的。", "en": "And the name of the second river is Gihon: the same is it that compasseth the whole land of Cush."},
-        "14": {"zh": "第三道河名叫底格里斯，流在亚述的东边。第四道河就是幼发拉底河。", "en": "And the name of the third river is Hiddekel: that is it which goeth in front of Assyria. And the fourth river is the Euphrates."},
-        "15": {"zh": "耶和华神将那人安置在伊甸园，使他修理，看守。", "en": "And Jehovah God took the man, and put him into the garden of Eden to dress it and to keep it."},
-        "16": {"zh": "耶和华神吩咐他说：园中各样树上的果子，你可以随意吃，", "en": "And Jehovah God commanded the man, saying, Of every tree of the garden thou mayest freely eat:"},
-        "17": {"zh": "只是分别善恶树上的果子，你不可吃，因为你吃的日子必定死！", "en": "but of the tree of the knowledge of good and evil, thou shalt not eat of it: for in the day that thou eatest thereof thou shalt surely die."},
-        "18": {"zh": "耶和华神说：那人独居不好，我要为他造一个配偶帮助他。", "en": "And Jehovah God said, It is not good that the man should be alone; I will make him a help meet for him."},
-        "19": {"zh": "耶和华神用土所造成的野地各样走兽和空中各样飞鸟都带到那人面前，看他叫什么。那人怎样叫各样的活物，那就是它的名字。", "en": "And out of the ground Jehovah God formed every beast of the field, and every bird of the heavens; and brought them unto the man to see what he would call them: and whatsoever the man called every living creature, that was the name thereof."},
-        "20": {"zh": "那人便给一切牲畜和空中飞鸟、野地走兽都起了名；只是那人没有遇见配偶帮助他。", "en": "And the man gave names to all cattle, and to the birds of the heavens, and to every beast of the field; but for man there was not found a help meet for him."},
-        "21": {"zh": "耶和华神使他沉睡，他就睡了；于是取下他的一条肋骨，又把肉合起来。", "en": "And Jehovah God caused a deep sleep to fall upon the man, and he slept; and he took one of his ribs, and closed up the flesh instead thereof:"},
-        "22": {"zh": "耶和华神就用那人身上所取的肋骨造成一个女人，领她到那人跟前。", "en": "and the rib, which Jehovah God had taken from the man, made he a woman, and brought her unto the man."},
-        "23": {"zh": "那人说：这是我骨中的骨，肉中的肉，可以称她为女人，因为她是从男人身上取出来的。", "en": "And the man said, This is now bone of my bones, and flesh of my flesh: she shall be called Woman, because she was taken out of Man."},
-        "24": {"zh": "因此，人要离开父母，与妻子连合，二人成为一体。", "en": "Therefore shall a man leave his father and his mother, and shall cleave unto his wife: and they shall be one flesh."},
-        "25": {"zh": "当时夫妻二人赤身露体，并不羞耻。", "en": "And they were both naked, the man and his wife, and were not ashamed."}
-    },
-    // 第3-10章数据在这里，由于篇幅限制，我在这里放一个示例
-    // 实际代码中需要完整包含第3-10章的数据
-};
-
-// ============================================================
-// 3. 创世记 1-10 章 深度思考数据
-// ============================================================
-const GENESIS_INSIGHTS = {
-    "1": {
-        history: "创世记第1章是希伯来圣经的开篇，传统认为成书于摩西时代（约主前15-13世纪）。这一章的文学形式极具特色，采用六日结构，每日以\"有晚上，有早晨\"收尾，形成清晰的时间框架。这种结构在古代近东文献中独树一帜，展现了希伯来文学对秩序与节奏的独特追求。",
-        story: "创世记第1章的叙事与古代近东的其他创世神话（如巴比伦的《埃努玛·埃利什》）形成鲜明对比。后者强调众神之间的冲突与暴力，而本章则呈现一位超越性的神，通过话语创造秩序。这种\"话语创造\"的主题在后续的圣经叙事中反复出现，成为理解圣经世界观的关键线索。",
-        future: "创世记第1章奠定了整部圣经的宇宙观基础，其\"从混沌到秩序\"的叙事模式在后世的文学、哲学与神学中产生了深远影响。",
-        thought: '🔹 "起初"这个词开启了一个宏大的叙事框架。它不是在讨论宇宙的"如何"起源，而是在宣告一个根本性的主张：一切存在都有其源头，这个源头具有意志与目的。\n\n🔹 光的创造先于光体的创造（第3节 vs 第14节），暗示了一个重要的哲学命题：光作为一种原则或秩序，优先于其物理载体。这让人思考：我们所见的物质世界背后，是否存在着更深层的意义结构？\n\n🔹 "神看着是好的"出现了七次。这不仅是美学判断，更是对创造本身的肯定。在一个充斥着混沌与虚无的古代世界观中，这种对存在的积极肯定具有深远的意义。\n\n🔹 人类作为"神的形象"被创造（第26节），意味着人被赋予了一种超越其他受造物的尊严与责任。这个形象不是静态的赋予，而是一种动态的呼召——人受邀参与对世界的管理，成为秩序的维护者而非破坏者。\n\n💭 当我们说"世界是有意义的"时，这个信念建立在什么样的基础之上？\n💭 "管理"与"控制"有什么区别？在人与世界的关系中，我们应该扮演什么样的角色？\n💭 如果"光"象征着对真理的寻求，那么今天的我们如何在自己的生活中"寻找光"？'
-    },
-    "2": {
-        history: "创世记第2章将视角从宏观的宇宙创造聚焦于\"人\"的被造。这一章常被视为对第1章创造的\"放大\"，通过更细致的叙事，揭示了人与土地、人与动物、人与人之间的深层关系。希伯来原文中\"亚当\"（adam）与\"土地\"（adamah）同源，暗示人是一种\"有灵的尘土\"，既属乎物质，又超越物质。",
-        story: "第2章与第1章在叙事上形成互补：第1章以\"神说\"为主导，展现创造的宏大秩序；第2章则以\"耶和华神\"为叙事主体，采用拟人化的笔法，描绘神\"造\"\"安置\"\"吩咐\"等具体行动。这种叙事策略在古代近东文学中被称为\"重复与扩展\"，通过不同视角深化同一主题。",
-        future: "创世记第2章确立了\"工作\"与\"安息\"的节奏，其\"修理看守\"的观念对生态伦理与劳动神学产生了深远影响。",
-        thought: '🔹 "耶和华神用地上的尘土造人"——人与土地之间建立了本质性的联结。这不是一种统治关系，而是一种共生关系：人从土地而来，最终也要归于土地。这提醒我们：人在使用自然资源时，应当怀有敬畏与感恩。\n\n🔹 "将他安置在伊甸园，使他修理，看守"——人被赋予的不是专制统治，而是"服侍"与"守护"。这两个动词在希伯来语中常用于描述祭司在圣所的职分，暗示人的工作具有某种神圣的维度。\n\n🔹 "那人独居不好"——孤独被宣告为"不好"，这是创造叙事中首次出现的负面判断。这暗示：关系不是创造的附加品，而是创造秩序中不可或缺的部分。\n\n💭 工作与休息之间应该如何保持平衡？\n💭 "修理"与"看守"这两个词，对我们理解人与世界的关系有什么启发？'
-    }
-};
-
-// ============================================================
-// 4. 状态变量
+// 状态变量
 // ============================================================
 let currentBookId = 'gen';
 let currentChapter = 1;
+
+// ⚠️ 重要：这是你的 Worker 地址
 const WORKER_URL = 'https://bible-proxy.liwanmeng22.workers.dev';
 
 // ============================================================
-// 5. 调用 Worker 代理
+// 调用 Worker 代理
 // ============================================================
 async function callWorker(messages, options = {}) {
     const response = await fetch(WORKER_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
             messages: messages,
             model: options.model || 'deepseek-chat',
@@ -867,40 +787,17 @@ async function callWorker(messages, options = {}) {
             max_tokens: options.max_tokens || 2000,
         }),
     });
+
     if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Worker 请求失败: ${response.status} ${errorText}`);
     }
+
     return await response.json();
 }
 
 // ============================================================
-// 6. 渲染经文
-// ============================================================
-function renderVerses(data, display) {
-    if (!data || typeof data !== 'object') {
-        display.innerHTML = '<p style="color:var(--text-muted);padding:20px;">暂无经文数据</p>';
-        return;
-    }
-    const keys = Object.keys(data).sort((a, b) => parseInt(a) - parseInt(b));
-    if (keys.length === 0) {
-        display.innerHTML = '<p style="color:var(--text-muted);padding:20px;">暂无经文数据</p>';
-        return;
-    }
-    let html = '';
-    keys.forEach(key => {
-        const v = data[key];
-        html += `<div class="verse-block">`;
-        html += `<span class="v">${key}</span>`;
-        html += `<span class="zh">${v.zh || ''}</span>`;
-        if (v.en) html += `<span class="en">${v.en}</span>`;
-        html += `</div>`;
-    });
-    display.innerHTML = html;
-}
-
-// ============================================================
-// 7. 加载章节
+// 加载章节
 // ============================================================
 async function loadChapter(bookId, chapter) {
     currentBookId = bookId;
@@ -912,22 +809,6 @@ async function loadChapter(bookId, chapter) {
     renderSidebar();
 
     const display = document.getElementById('verseDisplay');
-
-    // ===== 创世记 1-10 章：使用内置数据 =====
-    if (bookId === 'gen' && chapter >= 1 && chapter <= 10 && GENESIS_1_10[chapter]) {
-        renderVerses(GENESIS_1_10[chapter], display);
-        const insight = GENESIS_INSIGHTS[chapter];
-        if (insight) {
-            document.querySelector('#historyCard p').textContent = insight.history;
-            document.querySelector('#storyCard p').textContent = insight.story;
-            document.querySelector('#futureCard p').textContent = insight.future;
-            document.querySelector('#thoughtCard p').innerHTML = insight.thought.replace(/\n/g, '<br>');
-        }
-        loadNote(bookId, chapter);
-        return;
-    }
-
-    // ===== 其他章节：调用 AI =====
     display.innerHTML = `
         <div class="loading-container">
             <div class="sheep">🐑</div>
@@ -940,17 +821,6 @@ async function loadChapter(bookId, chapter) {
     document.querySelector('#thoughtCard p').textContent = 'AI 正在生成...';
 
     try {
-        // 检查缓存
-        const cacheKey = `${bookId}_${chapter}`;
-        const cached = localStorage.getItem(cacheKey);
-        if (cached) {
-            const data = JSON.parse(cached);
-            renderVerses(data, display);
-            // 这里也可以缓存思考内容，但为了简化就不做了
-            loadNote(bookId, chapter);
-            return;
-        }
-
         const prompt = `
             请提供圣经《${book.name}》第${chapter}章的中英文对照经文（中文和合本 + 英文WEB译本）。
             同时提供：
@@ -960,10 +830,10 @@ async function loadChapter(bookId, chapter) {
             
             请以JSON格式输出：
             {
-                "verses": {
-                    "1": {"zh": "中文经文", "en": "英文经文"},
+                "verses": [
+                    {"verse": 1, "zh": "中文经文", "en": "英文经文"},
                     ...
-                },
+                ],
                 "history": "历史背景",
                 "story": "文学关联",
                 "thought": "深度阅读思考（包含🔹和💭）"
@@ -977,31 +847,42 @@ async function loadChapter(bookId, chapter) {
             { role: 'user', content: prompt }
         ]);
 
-        let result;
-        try {
-            let content = data.choices[0].message.content;
-            try {
-                result = JSON.parse(content);
-            } catch (e) {
-                const jsonMatch = content.match(/\{[\s\S]*\}/);
-                if (jsonMatch) {
-                    result = JSON.parse(jsonMatch[0]);
-                } else {
-                    throw new Error('未找到有效的 JSON');
-                }
-            }
-        } catch (e) {
-            console.error('JSON解析失败:', e);
-            display.innerHTML = '<p style="color:#c0392b;padding:20px;">⚠️ 数据解析失败，请点击"刷新内容"重试</p>';
-            return;
+       // 解析 JSON
+let result;
+try {
+    let content = data.choices[0].message.content;
+    // 尝试直接解析
+    try {
+        result = JSON.parse(content);
+    } catch (e) {
+        // 如果直接解析失败，尝试提取 JSON
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            result = JSON.parse(jsonMatch[0]);
+        } else {
+            throw new Error('未找到有效的 JSON');
+        }
+    }
+} catch (e) {
+    console.error('JSON解析失败:', e);
+    display.innerHTML = `<p style="color:var(--text-secondary);white-space:pre-wrap;">数据解析失败，请重试</p>`;
+    return;
+}
+        // 渲染经文
+        if (result.verses && result.verses.length > 0) {
+            let html = '';
+            result.verses.forEach(v => {
+                html += `<div class="verse-block">`;
+                html += `<span class="v">${v.verse}</span>`;
+                html += `<span class="zh">${v.zh || ''}</span>`;
+                if (v.en) html += `<span class="en">${v.en}</span>`;
+                html += `</div>`;
+            });
+            display.innerHTML = html;
+        } else {
+            display.innerHTML = `<p style="color:var(--text-muted);">暂无经文数据</p>`;
         }
 
-        // 保存缓存
-        if (result.verses) {
-            localStorage.setItem(cacheKey, JSON.stringify(result.verses));
-        }
-
-        if (result.verses) renderVerses(result.verses, display);
         if (result.history) document.querySelector('#historyCard p').textContent = result.history;
         if (result.story) document.querySelector('#storyCard p').textContent = result.story;
         if (result.thought) {
@@ -1023,7 +904,7 @@ async function loadChapter(bookId, chapter) {
 }
 
 // ============================================================
-// 8. 问答
+// 问答
 // ============================================================
 async function askQuestion() {
     const input = document.getElementById('qaInput');
@@ -1040,6 +921,7 @@ async function askQuestion() {
             1. 保持客观、学术化的语气
             2. 不涉及传教或信仰劝导
             3. 基于圣经文本和学术研究回答
+            4. 如果问题与当前章节（${currentBookId} 第${currentChapter}章）相关，请结合该章节内容
             
             问题：${question}
         `;
@@ -1060,7 +942,7 @@ async function askQuestion() {
 }
 
 // ============================================================
-// 9. 侧边栏
+// 侧边栏
 // ============================================================
 function renderSidebar() {
     const sidebar = document.getElementById('sidebar');
@@ -1073,8 +955,7 @@ function renderSidebar() {
             html += `<div class="book-item ${active}" data-id="${b.id}">${b.abbrev} ${b.name}</div>`;
             if (b.id === currentBookId) {
                 html += `<div style="padding:2px 0;">`;
-                const maxCh = Math.min(b.chapters, 50);
-                for (let ch = 1; ch <= maxCh; ch++) {
+                for (let ch = 1; ch <= Math.min(b.chapters, 50); ch++) {
                     const isActive = ch === currentChapter ? 'active' : '';
                     html += `<div class="chapter-item ${isActive}" data-book="${b.id}" data-chapter="${ch}">第${ch}章</div>`;
                 }
@@ -1105,7 +986,7 @@ function renderSidebar() {
 }
 
 // ============================================================
-// 10. 笔记
+// 笔记
 // ============================================================
 function getNoteKey(bookId, chapter) { return `note_${bookId}_${chapter}`; }
 
@@ -1124,7 +1005,7 @@ function saveNote(bookId, chapter) {
 }
 
 // ============================================================
-// 11. 每日读经计划
+// 每日读经计划
 // ============================================================
 function generateReadingPlan() {
     const plan = [];
@@ -1188,7 +1069,7 @@ function renderPlanList() {
 }
 
 // ============================================================
-// 12. 搜索
+// 搜索
 // ============================================================
 function performSearch() {
     const query = document.getElementById('searchInput').value.trim();
@@ -1198,7 +1079,7 @@ function performSearch() {
 }
 
 // ============================================================
-// 13. 初始化
+// 初始化
 // ============================================================
 document.addEventListener('DOMContentLoaded', function() {
     // 字号
