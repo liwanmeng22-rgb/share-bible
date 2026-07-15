@@ -847,27 +847,22 @@ async function loadChapter(bookId, chapter) {
             { role: 'user', content: prompt }
         ]);
 
-       // 解析 JSON
-let result;
-try {
-    let content = data.choices[0].message.content;
-    // 尝试直接解析
-    try {
-        result = JSON.parse(content);
-    } catch (e) {
-        // 如果直接解析失败，尝试提取 JSON
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-            result = JSON.parse(jsonMatch[0]);
-        } else {
-            throw new Error('未找到有效的 JSON');
+        // 解析 JSON
+        let result;
+        try {
+            const content = data.choices[0].message.content;
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                result = JSON.parse(jsonMatch[0]);
+            } else {
+                result = JSON.parse(content);
+            }
+        } catch (e) {
+            console.error('JSON解析失败:', e);
+            display.innerHTML = `<p style="color:var(--text-secondary);white-space:pre-wrap;">${data.choices[0].message.content}</p>`;
+            return;
         }
-    }
-} catch (e) {
-    console.error('JSON解析失败:', e);
-    display.innerHTML = `<p style="color:var(--text-secondary);white-space:pre-wrap;">数据解析失败，请重试</p>`;
-    return;
-}
+
         // 渲染经文
         if (result.verses && result.verses.length > 0) {
             let html = '';
