@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📖 溪水旁 · 圣经文献阅读</title>
+    <title>📖 溪水旁 · 智能读经</title>
     <style>
-        /* ===== CSS变量 ===== */
         :root {
             --bg-page: #f5f0eb;
             --bg-app: #ffffff;
@@ -22,7 +21,6 @@
             --font-size: 17px;
             --line-height: 2.2;
         }
-
         [data-theme="cream"] {
             --bg-page: #f5f0eb;
             --bg-app: #ffffff;
@@ -67,12 +65,7 @@
             --accent: #c9a87c;
             --accent-hover: #dbb890;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', 'PingFang SC', 'Noto Serif SC', Roboto, serif;
             background: var(--bg-page);
@@ -88,13 +81,12 @@
             width: 100%;
             background: var(--bg-app);
             border-radius: 28px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
             overflow: hidden;
             transition: background 0.3s;
         }
-
         .disclaimer-banner {
             background: #1a1a1a;
             color: #e8dccf;
@@ -104,10 +96,7 @@
             letter-spacing: 0.3px;
             flex-shrink: 0;
         }
-        .disclaimer-banner strong {
-            color: #f0d5b0;
-        }
-
+        .disclaimer-banner strong { color: #f0d5b0; }
         .top-bar {
             padding: 12px 24px;
             background: var(--bg-app);
@@ -118,29 +107,11 @@
             gap: 10px;
             transition: background 0.3s;
         }
-        .logo {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-primary);
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-        .logo span {
-            color: var(--accent);
-        }
-        .top-bar .spacer {
-            flex: 1;
-        }
-        .top-bar .settings-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .top-bar .settings-group label {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
+        .logo { font-size: 18px; font-weight: 700; color: var(--text-primary); letter-spacing: 0.5px; white-space: nowrap; }
+        .logo span { color: var(--accent); }
+        .top-bar .spacer { flex: 1; }
+        .top-bar .settings-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .top-bar .settings-group label { font-size: 12px; color: var(--text-muted); }
         .top-bar .settings-group select,
         .top-bar .settings-group input[type="range"] {
             padding: 4px 10px;
@@ -153,12 +124,7 @@
             cursor: pointer;
             transition: 0.2s;
         }
-        .top-bar .settings-group input[type="range"] {
-            width: 80px;
-            padding: 2px 6px;
-            accent-color: var(--accent);
-        }
-
+        .top-bar .settings-group input[type="range"] { width: 80px; padding: 2px 6px; accent-color: var(--accent); }
         .search-bar {
             padding: 8px 24px 12px 24px;
             background: var(--bg-app);
@@ -181,12 +147,8 @@
             outline: none;
             transition: 0.2s;
         }
-        .search-bar input:focus {
-            border-color: var(--accent);
-        }
-        .search-bar input::placeholder {
-            color: var(--text-muted);
-        }
+        .search-bar input:focus { border-color: var(--accent); }
+        .search-bar input::placeholder { color: var(--text-muted); }
         .search-bar select {
             padding: 8px 14px;
             border: 1px solid var(--border-color);
@@ -209,10 +171,7 @@
             transition: 0.2s;
             white-space: nowrap;
         }
-        .search-bar button:hover {
-            background: var(--accent-hover);
-        }
-
+        .search-bar button:hover { background: var(--accent-hover); }
         .progress-bar {
             padding: 6px 24px;
             background: var(--bg-card);
@@ -250,10 +209,7 @@
             transition: 0.2s;
             color: var(--text-secondary);
         }
-        .progress-toggle:hover {
-            background: var(--border-color);
-        }
-
+        .progress-toggle:hover { background: var(--border-color); }
         .reading-plan-panel {
             display: none;
             padding: 12px 24px;
@@ -263,9 +219,7 @@
             overflow-y: auto;
             transition: background 0.3s;
         }
-        .reading-plan-panel.open {
-            display: block;
-        }
+        .reading-plan-panel.open { display: block; }
         .reading-plan-panel .plan-day {
             display: flex;
             align-items: center;
@@ -277,31 +231,13 @@
             cursor: pointer;
             transition: 0.15s;
         }
-        .reading-plan-panel .plan-day:hover {
-            background: var(--bg-app);
-        }
-        .reading-plan-panel .plan-day .day-num {
-            font-weight: 600;
-            color: var(--accent);
-            min-width: 40px;
-        }
-        .reading-plan-panel .plan-day .day-reading {
-            flex: 1;
-        }
-        .reading-plan-panel .plan-day .day-status {
-            font-size: 12px;
-        }
-        .reading-plan-panel .plan-day .day-status.done {
-            color: #27ae60;
-        }
-        .reading-plan-panel .plan-day .day-status.today {
-            color: var(--accent);
-            font-weight: 600;
-        }
-        .reading-plan-panel .plan-day .day-status.pending {
-            color: var(--text-muted);
-        }
-
+        .reading-plan-panel .plan-day:hover { background: var(--bg-app); }
+        .reading-plan-panel .plan-day .day-num { font-weight: 600; color: var(--accent); min-width: 40px; }
+        .reading-plan-panel .plan-day .day-reading { flex: 1; }
+        .reading-plan-panel .plan-day .day-status { font-size: 12px; }
+        .reading-plan-panel .plan-day .day-status.done { color: #27ae60; }
+        .reading-plan-panel .plan-day .day-status.today { color: var(--accent); font-weight: 600; }
+        .reading-plan-panel .plan-day .day-status.pending { color: var(--text-muted); }
         .main {
             display: flex;
             flex-direction: row;
@@ -317,9 +253,7 @@
             flex-shrink: 0;
             transition: background 0.3s;
         }
-        .sidebar-group {
-            margin-bottom: 12px;
-        }
+        .sidebar-group { margin-bottom: 12px; }
         .sidebar-group h4 {
             padding: 0 14px 4px 14px;
             font-size: 11px;
@@ -335,16 +269,8 @@
             transition: 0.1s;
             border-left: 3px solid transparent;
         }
-        .book-item:hover {
-            background: var(--border-color);
-            border-left-color: var(--accent);
-        }
-        .book-item.active {
-            background: var(--bg-card);
-            border-left-color: var(--accent);
-            font-weight: 600;
-            color: var(--text-primary);
-        }
+        .book-item:hover { background: var(--border-color); border-left-color: var(--accent); }
+        .book-item.active { background: var(--bg-card); border-left-color: var(--accent); font-weight: 600; color: var(--text-primary); }
         .chapter-item {
             padding: 3px 14px 3px 28px !important;
             cursor: pointer;
@@ -353,17 +279,8 @@
             transition: 0.1s;
             border-left: 3px solid transparent;
         }
-        .chapter-item:hover {
-            background: var(--border-color);
-            border-left-color: var(--accent);
-        }
-        .chapter-item.active {
-            background: var(--bg-card);
-            border-left-color: var(--accent);
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
+        .chapter-item:hover { background: var(--border-color); border-left-color: var(--accent); }
+        .chapter-item.active { background: var(--bg-card); border-left-color: var(--accent); font-weight: 600; color: var(--text-primary); }
         .content {
             flex: 1;
             padding: 20px 28px;
@@ -378,23 +295,14 @@
             margin-bottom: 10px;
             letter-spacing: 0.3px;
         }
-        .breadcrumb span {
-            color: var(--accent);
-            font-weight: 600;
-        }
-
+        .breadcrumb span { color: var(--accent); font-weight: 600; }
         .verse-text {
             font-size: var(--font-size);
             line-height: var(--line-height);
             color: var(--text-primary);
             transition: font-size 0.2s, line-height 0.2s;
         }
-        .verse-text .v {
-            color: var(--accent);
-            font-weight: 500;
-            margin-right: 4px;
-            font-size: 0.8em;
-        }
+        .verse-text .v { color: var(--accent); font-weight: 500; margin-right: 4px; font-size: 0.8em; }
         .verse-text .en {
             color: var(--text-muted);
             font-size: 0.85em;
@@ -404,40 +312,8 @@
             padding-left: 12px;
             margin-bottom: 8px;
         }
-        .verse-text .zh {
-            display: block;
-            margin-bottom: 2px;
-        }
-        .verse-text .verse-block {
-            margin-bottom: 8px;
-            padding: 4px 0;
-        }
-
-        .badge-person {
-            color: #c0392b;
-            font-weight: 600;
-            cursor: pointer;
-            border-bottom: 2px dotted #c0392b;
-            padding: 0 2px;
-            transition: 0.15s;
-        }
-        .badge-person:hover {
-            background: rgba(192, 57, 43, 0.1);
-            border-radius: 4px;
-        }
-        .badge-place {
-            color: #2980b9;
-            font-weight: 600;
-            cursor: pointer;
-            border-bottom: 2px dotted #2980b9;
-            padding: 0 2px;
-            transition: 0.15s;
-        }
-        .badge-place:hover {
-            background: rgba(41, 128, 185, 0.1);
-            border-radius: 4px;
-        }
-
+        .verse-text .zh { display: block; margin-bottom: 2px; }
+        .verse-text .verse-block { margin-bottom: 8px; padding: 4px 0; }
         .search-results {
             margin-top: 12px;
             padding: 14px 18px;
@@ -449,25 +325,10 @@
             overflow-y: auto;
             transition: background 0.3s;
         }
-        .search-results.active {
-            display: block;
-        }
-        .search-results .result-item {
-            padding: 6px 0;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-        .search-results .result-item:hover {
-            color: var(--accent);
-        }
-        .search-results .result-item .ref {
-            color: var(--accent);
-            font-weight: 600;
-            margin-right: 8px;
-        }
-
+        .search-results.active { display: block; }
+        .search-results .result-item { padding: 6px 0; border-bottom: 1px solid var(--border-color); cursor: pointer; font-size: 14px; color: var(--text-secondary); }
+        .search-results .result-item:hover { color: var(--accent); }
+        .search-results .result-item .ref { color: var(--accent); font-weight: 600; margin-right: 8px; }
         .insight-panel {
             margin-top: 24px;
             border-top: 2px dashed var(--border-color);
@@ -499,17 +360,8 @@
             align-items: center;
             gap: 6px;
         }
-        .insight-card p {
-            font-size: 14px;
-            line-height: 1.8;
-            color: var(--text-secondary);
-        }
-        .insight-card .placeholder {
-            color: var(--text-muted);
-            font-style: italic;
-            font-size: 13px;
-        }
-
+        .insight-card p { font-size: 14px; line-height: 1.8; color: var(--text-secondary); }
+        .insight-card .placeholder { color: var(--text-muted); font-style: italic; font-size: 13px; }
         .thought-card {
             background: var(--bg-thought);
             border-radius: 14px;
@@ -517,18 +369,8 @@
             border-left: 5px solid var(--accent);
             transition: background 0.3s;
         }
-        .thought-card .label {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-secondary);
-            letter-spacing: 0.5px;
-        }
-        .thought-card p {
-            font-size: 15px;
-            line-height: 1.9;
-            color: var(--text-primary);
-            margin-top: 4px;
-        }
+        .thought-card .label { font-size: 12px; font-weight: 700; color: var(--text-secondary); letter-spacing: 0.5px; }
+        .thought-card p { font-size: 15px; line-height: 1.9; color: var(--text-primary); margin-top: 4px; }
         .thought-card .thought-question {
             display: block;
             margin-top: 10px;
@@ -539,7 +381,6 @@
             font-style: italic;
             color: var(--text-secondary);
         }
-
         .refresh-btn {
             align-self: flex-end;
             background: var(--border-color);
@@ -552,11 +393,7 @@
             cursor: pointer;
             transition: 0.2s;
         }
-        .refresh-btn:hover {
-            background: var(--accent);
-            color: #fff;
-        }
-
+        .refresh-btn:hover { background: var(--accent); color: #fff; }
         .note-area {
             margin-top: 18px;
             padding: 14px 18px;
@@ -573,15 +410,8 @@
             gap: 6px;
             margin-bottom: 6px;
         }
-        .note-area .note-header span {
-            font-weight: 600;
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-        .note-area .note-header small {
-            font-size: 11px;
-            color: var(--text-muted);
-        }
+        .note-area .note-header span { font-weight: 600; font-size: 14px; color: var(--text-secondary); }
+        .note-area .note-header small { font-size: 11px; color: var(--text-muted); }
         .note-area textarea {
             width: 100%;
             min-height: 70px;
@@ -596,60 +426,30 @@
             outline: none;
             transition: 0.2s;
         }
-        .note-area textarea:focus {
-            border-color: var(--accent);
-        }
-        .note-area .note-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 6px;
-            flex-wrap: wrap;
-        }
-        .note-area .note-actions button {
-            padding: 5px 16px;
-            border: none;
-            border-radius: 40px;
-            font-size: 12px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: 0.2s;
-        }
-        .note-area .note-actions .save-note {
-            background: var(--accent);
-            color: #fff;
-        }
-        .note-area .note-actions .save-note:hover {
-            background: var(--accent-hover);
-        }
-        .note-area .note-actions .clear-note {
-            background: var(--border-color);
-            color: var(--text-secondary);
-        }
-        .note-status {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-
+        .note-area textarea:focus { border-color: var(--accent); }
+        .note-area .note-actions { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+        .note-area .note-actions button { padding: 5px 16px; border: none; border-radius: 40px; font-size: 12px; cursor: pointer; font-weight: 500; transition: 0.2s; }
+        .note-area .note-actions .save-note { background: var(--accent); color: #fff; }
+        .note-area .note-actions .save-note:hover { background: var(--accent-hover); }
+        .note-area .note-actions .clear-note { background: var(--border-color); color: var(--text-secondary); }
+        .note-status { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
         .popup-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.35);
+            background: rgba(0,0,0,0.35);
             z-index: 999;
             display: none;
         }
-        .popup-overlay.active {
-            display: block;
-        }
+        .popup-overlay.active { display: block; }
         .badge-popup {
             position: fixed;
             max-width: 380px;
             background: var(--bg-app);
             border-radius: 18px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
             padding: 20px 24px;
             z-index: 1000;
             display: none;
@@ -659,9 +459,7 @@
             transform: translate(-50%, -50%);
             transition: background 0.3s;
         }
-        .badge-popup.active {
-            display: block;
-        }
+        .badge-popup.active { display: block; }
         .badge-popup .close-popup {
             position: absolute;
             top: 10px;
@@ -672,22 +470,9 @@
             background: none;
             border: none;
         }
-        .badge-popup .popup-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-        .badge-popup .popup-sub {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-        .badge-popup .popup-body {
-            font-size: 14px;
-            line-height: 1.8;
-            color: var(--text-secondary);
-        }
-
+        .badge-popup .popup-title { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+        .badge-popup .popup-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+        .badge-popup .popup-body { font-size: 14px; line-height: 1.8; color: var(--text-secondary); }
         .footer-disclaimer {
             background: var(--bg-card);
             border-top: 1px solid var(--border-color);
@@ -698,10 +483,7 @@
             flex-shrink: 0;
             transition: background 0.3s;
         }
-        .footer-disclaimer strong {
-            color: var(--text-secondary);
-        }
-
+        .footer-disclaimer strong { color: var(--text-secondary); }
         .loading-container {
             display: flex;
             flex-direction: column;
@@ -716,46 +498,73 @@
             display: inline-block;
         }
         @keyframes sheepBounce {
-            0%,
-            100% {
-                transform: translateY(0) rotate(-3deg);
-            }
-            50% {
-                transform: translateY(-15px) rotate(3deg);
-            }
+            0%,100% { transform: translateY(0) rotate(-3deg); }
+            50% { transform: translateY(-15px) rotate(3deg); }
         }
-        .loading-container .loading-text {
-            font-size: 18px;
-            color: var(--text-muted);
-            font-weight: 500;
-            letter-spacing: 2px;
-        }
+        .loading-container .loading-text { font-size: 18px; color: var(--text-muted); font-weight: 500; letter-spacing: 2px; }
         .loading-container .loading-dots::after {
             content: '...';
             animation: dots 1.5s steps(4, end) infinite;
         }
         @keyframes dots {
-            0% {
-                content: '';
-            }
-            25% {
-                content: '.';
-            }
-            50% {
-                content: '..';
-            }
-            75% {
-                content: '...';
-            }
-            100% {
-                content: '';
-            }
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+            100% { content: ''; }
         }
-
+        .qa-area {
+            margin-top: 16px;
+            padding: 14px 18px;
+            background: var(--bg-note);
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+        }
+        .qa-area .qa-input-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .qa-area .qa-input-group input {
+            flex: 1;
+            min-width: 150px;
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            font-size: 14px;
+            background: var(--bg-app);
+            color: var(--text-primary);
+            outline: none;
+            transition: 0.2s;
+        }
+        .qa-area .qa-input-group input:focus { border-color: var(--accent); }
+        .qa-area .qa-input-group button {
+            padding: 8px 22px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .qa-area .qa-input-group button:hover { background: var(--accent-hover); }
+        .qa-area .qa-answer {
+            margin-top: 10px;
+            padding: 12px 16px;
+            background: var(--bg-app);
+            border-radius: 12px;
+            border-left: 3px solid var(--accent);
+            font-size: 14px;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            display: none;
+        }
+        .qa-area .qa-answer.show { display: block; }
         @media (max-width: 860px) {
-            .main {
-                flex-direction: column;
-            }
+            .main { flex-direction: column; }
             .sidebar {
                 width: 100%;
                 max-height: 200px;
@@ -767,904 +576,562 @@
                 gap: 2px;
                 overflow-y: auto;
             }
-            .sidebar-group {
-                width: 100%;
-                margin-bottom: 2px;
-            }
-            .sidebar-group h4 {
-                padding: 2px 8px;
-                font-size: 10px;
-            }
-            .book-item {
-                display: inline-block;
-                padding: 3px 10px;
-                font-size: 12px;
-                border-left: none;
-                border-radius: 20px;
-            }
-            .book-item.active {
-                border-left: none;
-                background: var(--accent);
-                color: #fff;
-            }
-            .chapter-item {
-                display: inline-block !important;
-                padding: 2px 8px !important;
-                font-size: 11px !important;
-                border-left: none !important;
-                border-radius: 12px;
-                margin-left: 6px;
-            }
-            .chapter-item.active {
-                background: var(--accent);
-                color: #fff;
-            }
-            .content {
-                padding: 14px 14px;
-                max-height: none;
-            }
-            .insight-row {
-                grid-template-columns: 1fr;
-            }
-            .top-bar {
-                padding: 10px 14px;
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .top-bar .settings-group {
-                justify-content: flex-start;
-            }
-            .search-bar {
-                padding: 6px 14px 10px 14px;
-            }
-            .progress-bar {
-                padding: 4px 14px;
-                font-size: 11px;
-            }
-            .badge-popup {
-                max-width: 92%;
-                padding: 16px 16px;
-            }
-            .reading-plan-panel {
-                padding: 8px 14px;
-                max-height: 200px;
-            }
+            .sidebar-group { width: 100%; margin-bottom: 2px; }
+            .sidebar-group h4 { padding: 2px 8px; font-size: 10px; }
+            .book-item { display: inline-block; padding: 3px 10px; font-size: 12px; border-left: none; border-radius: 20px; }
+            .book-item.active { border-left: none; background: var(--accent); color: #fff; }
+            .chapter-item { display: inline-block !important; padding: 2px 8px !important; font-size: 11px !important; border-left: none !important; border-radius: 12px; margin-left: 6px; }
+            .chapter-item.active { background: var(--accent); color: #fff; }
+            .content { padding: 14px 14px; max-height: none; }
+            .insight-row { grid-template-columns: 1fr; }
+            .top-bar { padding: 10px 14px; flex-direction: column; align-items: stretch; }
+            .top-bar .settings-group { justify-content: flex-start; }
+            .search-bar { padding: 6px 14px 10px 14px; }
+            .progress-bar { padding: 4px 14px; font-size: 11px; }
+            .badge-popup { max-width: 92%; padding: 16px 16px; }
+            .reading-plan-panel { padding: 8px 14px; max-height: 200px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="app" id="app">
-
-        <div class="disclaimer-banner">
-            ⚠️ <strong>免责声明：</strong> 本站仅为《圣经》文献的学术性阅读、查阅与学习平台，不涉及任何宗教传教、布道或信仰劝导活动。请遵守国家法律法规，理性阅读。
-        </div>
-
-        <div class="top-bar">
-            <div class="logo">📖 溪水旁 <span>· 文献阅读</span></div>
-            <div class="spacer"></div>
-            <div class="settings-group">
-                <label>字号</label>
-                <input type="range" id="fontSizeSlider" min="14" max="24" value="17" step="1">
-                <span id="fontSizeLabel" style="font-size:13px;min-width:30px;">17</span>
-                <label style="margin-left:6px;">底色</label>
-                <select id="themeSelect">
-                    <option value="cream">奶油</option>
-                    <option value="sepia">护眼棕</option>
-                    <option value="gray">高级灰</option>
-                    <option value="dark">暗夜</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="搜索经文、人名、地名..." />
-            <select id="searchType">
-                <option value="all">全部</option>
-                <option value="word">经文</option>
-                <option value="person">人物</option>
-                <option value="place">地名</option>
+<div class="app" id="app">
+    <div class="disclaimer-banner">
+        ⚠️ <strong>免责声明：</strong> 本站仅为《圣经》文献的学术性阅读、查阅与学习平台，不涉及任何宗教传教、布道或信仰劝导活动。请遵守国家法律法规，理性阅读。
+    </div>
+    <div class="top-bar">
+        <div class="logo">📖 溪水旁 <span>· 智能读经</span></div>
+        <div class="spacer"></div>
+        <div class="settings-group">
+            <label>字号</label>
+            <input type="range" id="fontSizeSlider" min="14" max="24" value="17" step="1">
+            <span id="fontSizeLabel" style="font-size:13px;min-width:30px;">17</span>
+            <label style="margin-left:6px;">底色</label>
+            <select id="themeSelect">
+                <option value="cream">奶油</option>
+                <option value="sepia">护眼棕</option>
+                <option value="gray">高级灰</option>
+                <option value="dark">暗夜</option>
             </select>
-            <button id="searchBtn">🔍 搜索</button>
-        </div>
-
-        <div class="progress-bar">
-            <span class="progress-label">📅 年度读经计划</span>
-            <div class="progress-track">
-                <div class="progress-fill" id="progressFill" style="width:0%"></div>
-            </div>
-            <span id="progressText">0 / 260 章（新约）</span>
-            <span style="font-size:11px;color:var(--text-muted);" id="progressDay">第 0 天</span>
-            <button class="progress-toggle" id="planToggleBtn">📋 展开</button>
-        </div>
-
-        <div class="reading-plan-panel" id="readingPlanPanel">
-            <div id="planList"></div>
-        </div>
-
-        <div class="main">
-            <div class="sidebar" id="sidebar"></div>
-            <div class="content" id="contentArea">
-                <div class="breadcrumb" id="breadcrumb">📂 旧约 / <span>创世记</span> 第 1 章</div>
-                <div class="search-results" id="searchResults"></div>
-                <div class="verse-text" id="verseDisplay">
-                    <div class="loading-container">
-                        <div class="sheep">🐑</div>
-                        <div class="loading-text">加载经文<span class="loading-dots"></span></div>
-                    </div>
-                </div>
-
-                <div class="insight-panel" id="insightPanel">
-                    <div class="insight-row">
-                        <div class="insight-card" id="historyCard">
-                            <div class="label">🏛️ 历史背景</div>
-                            <p class="placeholder">加载中...</p>
-                        </div>
-                        <div class="insight-card" id="storyCard">
-                            <div class="label">📜 文学关联</div>
-                            <p class="placeholder">加载中...</p>
-                        </div>
-                        <div class="insight-card" id="futureCard">
-                            <div class="label">🔮 文本指向</div>
-                            <p class="placeholder">加载中...</p>
-                        </div>
-                    </div>
-                    <div class="thought-card" id="thoughtCard">
-                        <div class="label">💭 深度阅读思考</div>
-                        <p class="placeholder">加载中...</p>
-                    </div>
-                    <button class="refresh-btn" id="refreshInsightBtn">🔄 刷新内容</button>
-                </div>
-
-                <div class="note-area" id="noteArea">
-                    <div class="note-header">
-                        <span>📝 私人笔记</span>
-                        <small>仅保存在本设备，不上传服务器</small>
-                    </div>
-                    <textarea id="noteInput" placeholder="记录你的阅读思考、疑问或心得..."></textarea>
-                    <div class="note-actions">
-                        <button class="save-note" id="saveNoteBtn">💾 保存笔记</button>
-                        <button class="clear-note" id="clearNoteBtn">🗑️ 清空</button>
-                        <span class="note-status" id="noteStatus">📌 已自动保存</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="footer-disclaimer">
-            <strong>📌 本站声明：</strong> 本网站所有内容仅供 <strong>学术研究、文学阅读及历史文化学习</strong> 之用，不构成任何宗教传教、信仰劝导或仪式指导。
-            <span style="display:block;margin-top:4px;font-size:10px;">📚 数据版本：和合本 + WEB（中英文对照）· 创世记第1-10章</span>
         </div>
     </div>
 
-    <div class="popup-overlay" id="popupOverlay"></div>
-    <div class="badge-popup" id="badgePopup">
-        <button class="close-popup" id="closePopup">✕</button>
-        <div class="popup-title" id="popupTitle">名称</div>
-        <div class="popup-sub" id="popupSub">分类</div>
-        <div class="popup-body" id="popupBody">
-            <p>简介内容...</p>
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="搜索经文、人名、地名..." />
+        <select id="searchType">
+            <option value="all">全部</option>
+            <option value="word">经文</option>
+            <option value="person">人物</option>
+            <option value="place">地名</option>
+        </select>
+        <button id="searchBtn">🔍 搜索</button>
+    </div>
+    <div class="progress-bar">
+        <span class="progress-label">📅 年度读经计划</span>
+        <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        <span id="progressText">0 / 260 章（新约）</span>
+        <span style="font-size:11px;color:var(--text-muted);" id="progressDay">第 0 天</span>
+        <button class="progress-toggle" id="planToggleBtn">📋 展开</button>
+    </div>
+    <div class="reading-plan-panel" id="readingPlanPanel"><div id="planList"></div></div>
+    <div class="main">
+        <div class="sidebar" id="sidebar"></div>
+        <div class="content" id="contentArea">
+            <div class="breadcrumb" id="breadcrumb">📂 旧约 / <span>创世记</span> 第 1 章</div>
+            <div class="search-results" id="searchResults"></div>
+            <div class="verse-text" id="verseDisplay">
+                <div class="loading-container"><div class="sheep">🐑</div><div class="loading-text">AI 正在生成经文<span class="loading-dots"></span></div></div>
+            </div>
+            <div class="insight-panel" id="insightPanel">
+                <div class="insight-row">
+                    <div class="insight-card" id="historyCard"><div class="label">🏛️ 历史背景</div><p class="placeholder">AI 正在生成...</p></div>
+                    <div class="insight-card" id="storyCard"><div class="label">📜 文学关联</div><p class="placeholder">AI 正在生成...</p></div>
+                    <div class="insight-card" id="futureCard"><div class="label">🔮 文本指向</div><p class="placeholder">AI 正在生成...</p></div>
+                </div>
+                <div class="thought-card" id="thoughtCard"><div class="label">💭 深度阅读思考</div><p class="placeholder">AI 正在生成...</p></div>
+                <button class="refresh-btn" id="refreshInsightBtn">🔄 刷新内容</button>
+            </div>
+
+            <div class="qa-area">
+                <div class="qa-input-group">
+                    <input type="text" id="qaInput" placeholder="问 AI：创世记第3章在讲什么？" />
+                    <button id="qaBtn">💬 提问</button>
+                </div>
+                <div class="qa-answer" id="qaAnswer"></div>
+            </div>
+
+            <div class="note-area" id="noteArea">
+                <div class="note-header"><span>📝 私人笔记</span><small>仅保存在本设备</small></div>
+                <textarea id="noteInput" placeholder="记录你的阅读思考..."></textarea>
+                <div class="note-actions">
+                    <button class="save-note" id="saveNoteBtn">💾 保存笔记</button>
+                    <button class="clear-note" id="clearNoteBtn">🗑️ 清空</button>
+                    <span class="note-status" id="noteStatus">📌 已自动保存</span>
+                </div>
+            </div>
         </div>
     </div>
+    <div class="footer-disclaimer">
+        <strong>📌 本站声明：</strong> 本网站所有内容仅供 <strong>学术研究、文学阅读及历史文化学习</strong> 之用。
+        <span style="display:block;margin-top:4px;font-size:10px;">🤖 由 DeepSeek API 驱动 · 实时生成</span>
+    </div>
+</div>
 
-    <!-- 加载外部数据文件 -->
-    <script src="bible-data.js"></script>
+<div class="popup-overlay" id="popupOverlay"></div>
+<div class="badge-popup" id="badgePopup">
+    <button class="close-popup" id="closePopup">✕</button>
+    <div class="popup-title" id="popupTitle">名称</div>
+    <div class="popup-sub" id="popupSub">分类</div>
+    <div class="popup-body" id="popupBody"><p>简介内容...</p></div>
+</div>
 
-    <script>
-        // ============================================================
-        // 1. 圣经书籍列表
-        // ============================================================
-        const BIBLE_BOOKS = [
-            { id: 'gen', name: '创世记', group: '摩西五经', abbrev: '创', chapters: 50 },
-            { id: 'exo', name: '出埃及记', group: '摩西五经', abbrev: '出', chapters: 40 },
-            { id: 'lev', name: '利未记', group: '摩西五经', abbrev: '利', chapters: 27 },
-            { id: 'num', name: '民数记', group: '摩西五经', abbrev: '民', chapters: 36 },
-            { id: 'deu', name: '申命记', group: '摩西五经', abbrev: '申', chapters: 34 },
-            { id: 'jos', name: '约书亚记', group: '历史书', abbrev: '书', chapters: 24 },
-            { id: 'jdg', name: '士师记', group: '历史书', abbrev: '士', chapters: 21 },
-            { id: 'rut', name: '路得记', group: '历史书', abbrev: '得', chapters: 4 },
-            { id: '1sa', name: '撒母耳记上', group: '历史书', abbrev: '撒上', chapters: 31 },
-            { id: '2sa', name: '撒母耳记下', group: '历史书', abbrev: '撒下', chapters: 24 },
-            { id: '1ki', name: '列王纪上', group: '历史书', abbrev: '王上', chapters: 22 },
-            { id: '2ki', name: '列王纪下', group: '历史书', abbrev: '王下', chapters: 25 },
-            { id: '1ch', name: '历代志上', group: '历史书', abbrev: '代上', chapters: 29 },
-            { id: '2ch', name: '历代志下', group: '历史书', abbrev: '代下', chapters: 36 },
-            { id: 'ezr', name: '以斯拉记', group: '历史书', abbrev: '拉', chapters: 10 },
-            { id: 'neh', name: '尼希米记', group: '历史书', abbrev: '尼', chapters: 13 },
-            { id: 'est', name: '以斯帖记', group: '历史书', abbrev: '斯', chapters: 10 },
-            { id: 'job', name: '约伯记', group: '诗歌智慧书', abbrev: '伯', chapters: 42 },
-            { id: 'psa', name: '诗篇', group: '诗歌智慧书', abbrev: '诗', chapters: 150 },
-            { id: 'pro', name: '箴言', group: '诗歌智慧书', abbrev: '箴', chapters: 31 },
-            { id: 'ecc', name: '传道书', group: '诗歌智慧书', abbrev: '传', chapters: 12 },
-            { id: 'sol', name: '雅歌', group: '诗歌智慧书', abbrev: '歌', chapters: 8 },
-            { id: 'isa', name: '以赛亚书', group: '大先知书', abbrev: '赛', chapters: 66 },
-            { id: 'jer', name: '耶利米书', group: '大先知书', abbrev: '耶', chapters: 52 },
-            { id: 'lam', name: '耶利米哀歌', group: '大先知书', abbrev: '哀', chapters: 5 },
-            { id: 'eze', name: '以西结书', group: '大先知书', abbrev: '结', chapters: 48 },
-            { id: 'dan', name: '但以理书', group: '大先知书', abbrev: '但', chapters: 12 },
-            { id: 'hos', name: '何西阿书', group: '小先知书', abbrev: '何', chapters: 14 },
-            { id: 'jol', name: '约珥书', group: '小先知书', abbrev: '珥', chapters: 3 },
-            { id: 'amo', name: '阿摩司书', group: '小先知书', abbrev: '摩', chapters: 9 },
-            { id: 'oba', name: '俄巴底亚书', group: '小先知书', abbrev: '俄', chapters: 1 },
-            { id: 'jon', name: '约拿书', group: '小先知书', abbrev: '拿', chapters: 4 },
-            { id: 'mic', name: '弥迦书', group: '小先知书', abbrev: '弥', chapters: 7 },
-            { id: 'nam', name: '那鸿书', group: '小先知书', abbrev: '鸿', chapters: 3 },
-            { id: 'hab', name: '哈巴谷书', group: '小先知书', abbrev: '哈', chapters: 3 },
-            { id: 'zep', name: '西番雅书', group: '小先知书', abbrev: '番', chapters: 3 },
-            { id: 'hag', name: '哈该书', group: '小先知书', abbrev: '该', chapters: 2 },
-            { id: 'zac', name: '撒迦利亚书', group: '小先知书', abbrev: '亚', chapters: 14 },
-            { id: 'mal', name: '玛拉基书', group: '小先知书', abbrev: '玛', chapters: 4 },
-            { id: 'mat', name: '马太福音', group: '福音书', abbrev: '太', chapters: 28 },
-            { id: 'mrk', name: '马可福音', group: '福音书', abbrev: '可', chapters: 16 },
-            { id: 'luk', name: '路加福音', group: '福音书', abbrev: '路', chapters: 24 },
-            { id: 'jhn', name: '约翰福音', group: '福音书', abbrev: '约', chapters: 21 },
-            { id: 'act', name: '使徒行传', group: '历史书(新约)', abbrev: '徒', chapters: 28 },
-            { id: 'rom', name: '罗马书', group: '保罗书信', abbrev: '罗', chapters: 16 },
-            { id: '1co', name: '哥林多前书', group: '保罗书信', abbrev: '林前', chapters: 16 },
-            { id: '2co', name: '哥林多后书', group: '保罗书信', abbrev: '林后', chapters: 13 },
-            { id: 'gal', name: '加拉太书', group: '保罗书信', abbrev: '加', chapters: 6 },
-            { id: 'eph', name: '以弗所书', group: '保罗书信', abbrev: '弗', chapters: 6 },
-            { id: 'php', name: '腓立比书', group: '保罗书信', abbrev: '腓', chapters: 4 },
-            { id: 'col', name: '歌罗西书', group: '保罗书信', abbrev: '西', chapters: 4 },
-            { id: '1th', name: '帖撒罗尼迦前书', group: '保罗书信', abbrev: '帖前', chapters: 5 },
-            { id: '2th', name: '帖撒罗尼迦后书', group: '保罗书信', abbrev: '帖后', chapters: 3 },
-            { id: '1ti', name: '提摩太前书', group: '保罗书信', abbrev: '提前', chapters: 6 },
-            { id: '2ti', name: '提摩太后书', group: '保罗书信', abbrev: '提后', chapters: 4 },
-            { id: 'tit', name: '提多书', group: '保罗书信', abbrev: '多', chapters: 3 },
-            { id: 'phm', name: '腓利门书', group: '保罗书信', abbrev: '门', chapters: 1 },
-            { id: 'heb', name: '希伯来书', group: '普通书信', abbrev: '来', chapters: 13 },
-            { id: 'jas', name: '雅各书', group: '普通书信', abbrev: '雅', chapters: 5 },
-            { id: '1pe', name: '彼得前书', group: '普通书信', abbrev: '彼前', chapters: 5 },
-            { id: '2pe', name: '彼得后书', group: '普通书信', abbrev: '彼后', chapters: 3 },
-            { id: '1jn', name: '约翰一书', group: '普通书信', abbrev: '约壹', chapters: 5 },
-            { id: '2jn', name: '约翰二书', group: '普通书信', abbrev: '约贰', chapters: 1 },
-            { id: '3jn', name: '约翰三书', group: '普通书信', abbrev: '约叁', chapters: 1 },
-            { id: 'jud', name: '犹大书', group: '普通书信', abbrev: '犹', chapters: 1 },
-            { id: 'rev', name: '启示录', group: '启示文学', abbrev: '启', chapters: 22 }
-        ];
+<script>
+// ============================================================
+// 圣经书籍列表（66卷）
+// ============================================================
+const BIBLE_BOOKS = [
+    { id: 'gen', name: '创世记', group: '摩西五经', abbrev: '创', chapters: 50 },
+    { id: 'exo', name: '出埃及记', group: '摩西五经', abbrev: '出', chapters: 40 },
+    { id: 'lev', name: '利未记', group: '摩西五经', abbrev: '利', chapters: 27 },
+    { id: 'num', name: '民数记', group: '摩西五经', abbrev: '民', chapters: 36 },
+    { id: 'deu', name: '申命记', group: '摩西五经', abbrev: '申', chapters: 34 },
+    { id: 'jos', name: '约书亚记', group: '历史书', abbrev: '书', chapters: 24 },
+    { id: 'jdg', name: '士师记', group: '历史书', abbrev: '士', chapters: 21 },
+    { id: 'rut', name: '路得记', group: '历史书', abbrev: '得', chapters: 4 },
+    { id: '1sa', name: '撒母耳记上', group: '历史书', abbrev: '撒上', chapters: 31 },
+    { id: '2sa', name: '撒母耳记下', group: '历史书', abbrev: '撒下', chapters: 24 },
+    { id: '1ki', name: '列王纪上', group: '历史书', abbrev: '王上', chapters: 22 },
+    { id: '2ki', name: '列王纪下', group: '历史书', abbrev: '王下', chapters: 25 },
+    { id: '1ch', name: '历代志上', group: '历史书', abbrev: '代上', chapters: 29 },
+    { id: '2ch', name: '历代志下', group: '历史书', abbrev: '代下', chapters: 36 },
+    { id: 'ezr', name: '以斯拉记', group: '历史书', abbrev: '拉', chapters: 10 },
+    { id: 'neh', name: '尼希米记', group: '历史书', abbrev: '尼', chapters: 13 },
+    { id: 'est', name: '以斯帖记', group: '历史书', abbrev: '斯', chapters: 10 },
+    { id: 'job', name: '约伯记', group: '诗歌智慧书', abbrev: '伯', chapters: 42 },
+    { id: 'psa', name: '诗篇', group: '诗歌智慧书', abbrev: '诗', chapters: 150 },
+    { id: 'pro', name: '箴言', group: '诗歌智慧书', abbrev: '箴', chapters: 31 },
+    { id: 'ecc', name: '传道书', group: '诗歌智慧书', abbrev: '传', chapters: 12 },
+    { id: 'sol', name: '雅歌', group: '诗歌智慧书', abbrev: '歌', chapters: 8 },
+    { id: 'isa', name: '以赛亚书', group: '大先知书', abbrev: '赛', chapters: 66 },
+    { id: 'jer', name: '耶利米书', group: '大先知书', abbrev: '耶', chapters: 52 },
+    { id: 'lam', name: '耶利米哀歌', group: '大先知书', abbrev: '哀', chapters: 5 },
+    { id: 'eze', name: '以西结书', group: '大先知书', abbrev: '结', chapters: 48 },
+    { id: 'dan', name: '但以理书', group: '大先知书', abbrev: '但', chapters: 12 },
+    { id: 'hos', name: '何西阿书', group: '小先知书', abbrev: '何', chapters: 14 },
+    { id: 'jol', name: '约珥书', group: '小先知书', abbrev: '珥', chapters: 3 },
+    { id: 'amo', name: '阿摩司书', group: '小先知书', abbrev: '摩', chapters: 9 },
+    { id: 'oba', name: '俄巴底亚书', group: '小先知书', abbrev: '俄', chapters: 1 },
+    { id: 'jon', name: '约拿书', group: '小先知书', abbrev: '拿', chapters: 4 },
+    { id: 'mic', name: '弥迦书', group: '小先知书', abbrev: '弥', chapters: 7 },
+    { id: 'nam', name: '那鸿书', group: '小先知书', abbrev: '鸿', chapters: 3 },
+    { id: 'hab', name: '哈巴谷书', group: '小先知书', abbrev: '哈', chapters: 3 },
+    { id: 'zep', name: '西番雅书', group: '小先知书', abbrev: '番', chapters: 3 },
+    { id: 'hag', name: '哈该书', group: '小先知书', abbrev: '该', chapters: 2 },
+    { id: 'zac', name: '撒迦利亚书', group: '小先知书', abbrev: '亚', chapters: 14 },
+    { id: 'mal', name: '玛拉基书', group: '小先知书', abbrev: '玛', chapters: 4 },
+    { id: 'mat', name: '马太福音', group: '福音书', abbrev: '太', chapters: 28 },
+    { id: 'mrk', name: '马可福音', group: '福音书', abbrev: '可', chapters: 16 },
+    { id: 'luk', name: '路加福音', group: '福音书', abbrev: '路', chapters: 24 },
+    { id: 'jhn', name: '约翰福音', group: '福音书', abbrev: '约', chapters: 21 },
+    { id: 'act', name: '使徒行传', group: '历史书(新约)', abbrev: '徒', chapters: 28 },
+    { id: 'rom', name: '罗马书', group: '保罗书信', abbrev: '罗', chapters: 16 },
+    { id: '1co', name: '哥林多前书', group: '保罗书信', abbrev: '林前', chapters: 16 },
+    { id: '2co', name: '哥林多后书', group: '保罗书信', abbrev: '林后', chapters: 13 },
+    { id: 'gal', name: '加拉太书', group: '保罗书信', abbrev: '加', chapters: 6 },
+    { id: 'eph', name: '以弗所书', group: '保罗书信', abbrev: '弗', chapters: 6 },
+    { id: 'php', name: '腓立比书', group: '保罗书信', abbrev: '腓', chapters: 4 },
+    { id: 'col', name: '歌罗西书', group: '保罗书信', abbrev: '西', chapters: 4 },
+    { id: '1th', name: '帖撒罗尼迦前书', group: '保罗书信', abbrev: '帖前', chapters: 5 },
+    { id: '2th', name: '帖撒罗尼迦后书', group: '保罗书信', abbrev: '帖后', chapters: 3 },
+    { id: '1ti', name: '提摩太前书', group: '保罗书信', abbrev: '提前', chapters: 6 },
+    { id: '2ti', name: '提摩太后书', group: '保罗书信', abbrev: '提后', chapters: 4 },
+    { id: 'tit', name: '提多书', group: '保罗书信', abbrev: '多', chapters: 3 },
+    { id: 'phm', name: '腓利门书', group: '保罗书信', abbrev: '门', chapters: 1 },
+    { id: 'heb', name: '希伯来书', group: '普通书信', abbrev: '来', chapters: 13 },
+    { id: 'jas', name: '雅各书', group: '普通书信', abbrev: '雅', chapters: 5 },
+    { id: '1pe', name: '彼得前书', group: '普通书信', abbrev: '彼前', chapters: 5 },
+    { id: '2pe', name: '彼得后书', group: '普通书信', abbrev: '彼后', chapters: 3 },
+    { id: '1jn', name: '约翰一书', group: '普通书信', abbrev: '约壹', chapters: 5 },
+    { id: '2jn', name: '约翰二书', group: '普通书信', abbrev: '约贰', chapters: 1 },
+    { id: '3jn', name: '约翰三书', group: '普通书信', abbrev: '约叁', chapters: 1 },
+    { id: 'jud', name: '犹大书', group: '普通书信', abbrev: '犹', chapters: 1 },
+    { id: 'rev', name: '启示录', group: '启示文学', abbrev: '启', chapters: 22 }
+];
 
-        // 新约书籍列表（用于读经计划）
-        const NT_BOOKS = BIBLE_BOOKS.filter(b =>
-            ['福音书', '历史书(新约)', '保罗书信', '普通书信', '启示文学'].includes(b.group)
-        );
+const NT_BOOKS = BIBLE_BOOKS.filter(b =>
+    ['福音书', '历史书(新约)', '保罗书信', '普通书信', '启示文学'].includes(b.group)
+);
 
-        // ============================================================
-        // 2. 数据容器
-        // ============================================================
-        let BIBLE_DATA = {};
-        let currentBookId = 'gen';
-        let currentChapter = 1;
-        let dataLoaded = false;
+// ============================================================
+// 状态变量
+// ============================================================
+let currentBookId = 'gen';
+let currentChapter = 1;
 
-        // ============================================================
-        // 3. 人物词典
-        // ============================================================
-        const PERSON_DICT = {
-            '亚伯拉罕': {
-                title: '亚伯拉罕',
-                sub: '希伯来族长 · 约主前2000年',
-                body: '亚伯拉罕原籍吾珥（今伊拉克南部），按圣经记载，他前往迦南地。他被视为希伯来民族的始祖，在犹太教、基督教和伊斯兰教传统中均被尊崇。其生平故事主要记载于创世记第12至25章。'
-            },
-            '摩西': {
-                title: '摩西',
-                sub: '希伯来领袖 · 约主前13世纪',
-                body: '摩西是希伯来传统中的重要人物，按圣经记载，他带领以色列人从埃及离开，并在西奈山接受律法。其生平主要记载于出埃及记、利未记、民数记和申命记。'
-            },
-            '大卫': {
-                title: '大卫',
-                sub: '以色列国王 · 约主前1000年',
-                body: '大卫是古代以色列的第二位国王，按圣经记载，他统一了以色列各支派，定都耶路撒冷。其生平记载于撒母耳记上、撒母耳记下和历代志。'
-            },
-            '该隐': {
-                title: '该隐',
-                sub: '圣经人物 · 创世记',
-                body: '该隐是亚当和夏娃的长子，按创世记记载，他是农夫，因嫉妒杀死弟弟亚伯，后被流放。该隐的故事被视为探讨人性与道德的古代叙事。'
-            },
-            '亚伯': {
-                title: '亚伯',
-                sub: '圣经人物 · 创世记',
-                body: '亚伯是亚当和夏娃的次子，按创世记记载，他是牧羊人，其献祭蒙悦纳，后被哥哥该隐杀害。'
-            },
-            '以撒': {
-                title: '以撒',
-                sub: '希伯来族长 · 创世记',
-                body: '以撒是亚伯拉罕的儿子，按创世记记载，他是以扫和雅各的父亲。其生平主要记载于创世记第21至35章。'
-            },
-            '雅各': {
-                title: '雅各',
-                sub: '希伯来族长 · 创世记',
-                body: '雅各是以撒的儿子，按创世记记载，他更名为以色列，是以色列十二支派的祖先。其生平记载于创世记第25至50章。'
-            },
-            '约瑟': {
-                title: '约瑟',
-                sub: '希伯来族长 · 创世记',
-                body: '约瑟是雅各的儿子，按创世记记载，他被兄弟卖到埃及，后在埃及担任高官，并最终将家人接到埃及。其故事记载于创世记第37至50章。'
-            }
-        };
+// ⚠️ 重要：这是你的 Worker 地址
+const WORKER_URL = 'https://bible-proxy.liwanmeng22.workers.dev';
 
-        const PLACE_DICT = {
-            '埃及': {
-                title: '埃及',
-                sub: '古代文明 · 尼罗河流域',
-                body: '埃及是古代近东的重要文明，位于非洲东北部。按圣经记载，亚伯拉罕、约瑟、摩西等人物都曾与埃及有密切关联。'
-            },
-            '迦南': {
-                title: '迦南',
-                sub: '古代地区 · 地中海东岸',
-                body: '迦南是古代地中海东岸的地区，按圣经记载，这是亚伯拉罕前往的地方，后来成为以色列人的居住地。'
-            },
-            '耶路撒冷': {
-                title: '耶路撒冷',
-                sub: '古城 · 以色列',
-                body: '耶路撒冷是古代犹大地区的中心城市，按圣经记载，大卫将其定为首都，所罗门在此建造圣殿。'
-            }
-        };
+// ============================================================
+// 调用 Worker 代理
+// ============================================================
+async function callWorker(messages, options = {}) {
+    const response = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            messages: messages,
+            model: options.model || 'deepseek-chat',
+            temperature: options.temperature || 0.7,
+            max_tokens: options.max_tokens || 2000,
+        }),
+    });
 
-        // ============================================================
-        // 4. 核心功能
-        // ============================================================
-        function applyBadges(text) {
-            let result = text;
-            for (const [name] of Object.entries(PERSON_DICT)) {
-                const regex = new RegExp(name, 'g');
-                result = result.replace(regex,
-                    `<span class="badge-person" data-type="person" data-name="${name}">${name}</span>`
-                );
-            }
-            for (const [name] of Object.entries(PLACE_DICT)) {
-                const regex = new RegExp(name, 'g');
-                result = result.replace(regex,
-                    `<span class="badge-place" data-type="place" data-name="${name}">${name}</span>`
-                );
-            }
-            return result;
-        }
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Worker 请求失败: ${response.status} ${errorText}`);
+    }
 
-        function getChapterData(bookId, chapter) {
-            const book = BIBLE_DATA[bookId];
-            if (!book || !book.chapters || !book.chapters[chapter]) {
-                return null;
-            }
-            return book.chapters[chapter];
-        }
+    return await response.json();
+}
 
-        function loadChapter(bookId, chapter) {
-            currentBookId = bookId;
-            currentChapter = chapter;
+// ============================================================
+// 加载章节
+// ============================================================
+async function loadChapter(bookId, chapter) {
+    currentBookId = bookId;
+    currentChapter = chapter;
+    const book = BIBLE_BOOKS.find(b => b.id === bookId);
+    if (!book) return;
 
-            const book = BIBLE_BOOKS.find(b => b.id === bookId);
-            if (!book) return;
+    document.getElementById('breadcrumb').innerHTML = `📂 ${book.group} / <span>${book.name}</span> 第 ${chapter} 章`;
+    renderSidebar();
 
-            document.getElementById('breadcrumb').innerHTML =
-                `📂 ${book.group} / <span>${book.name}</span> 第 ${chapter} 章`;
+    const display = document.getElementById('verseDisplay');
+    display.innerHTML = `
+        <div class="loading-container">
+            <div class="sheep">🐑</div>
+            <div class="loading-text">AI 正在生成经文<span class="loading-dots"></span></div>
+        </div>
+    `;
+    document.querySelector('#historyCard p').textContent = 'AI 正在生成...';
+    document.querySelector('#storyCard p').textContent = 'AI 正在生成...';
+    document.querySelector('#futureCard p').textContent = 'AI 正在生成...';
+    document.querySelector('#thoughtCard p').textContent = 'AI 正在生成...';
 
-            renderSidebar();
-
-            const data = getChapterData(bookId, chapter);
-            const display = document.getElementById('verseDisplay');
-
-            if (data) {
-                let html = '';
-                const keys = Object.keys(data).sort((a, b) => parseInt(a) - parseInt(b));
-                for (const key of keys) {
-                    const v = data[key];
-                    const zhWithBadges = applyBadges(v.zh);
-                    html += `<div class="verse-block">`;
-                    html += `<span class="v">${key}</span>`;
-                    html += `<span class="zh">${zhWithBadges}</span>`;
-                    if (v.en) {
-                        html += `<span class="en">${v.en}</span>`;
-                    }
-                    html += `</div>`;
-                }
-                display.innerHTML = html;
-            } else {
-                display.innerHTML =
-                    `<p style="color:var(--text-muted);padding:40px 0;text-align:center;">📖 该章节数据正在录入中，敬请期待...</p>`;
-            }
-
-            loadNote(bookId, chapter);
-            generateInsights(bookId, chapter);
-        }
-
-        function renderSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            let html = '';
-            const groups = [...new Set(BIBLE_BOOKS.map(b => b.group))];
-            groups.forEach(g => {
-                html += `<div class="sidebar-group"><h4>${g}</h4>`;
-                BIBLE_BOOKS.filter(b => b.group === g).forEach(b => {
-                    const active = b.id === currentBookId ? 'active' : '';
-                    const hasData = BIBLE_DATA[b.id] ? true : false;
-                    html += `<div class="book-item ${active}" data-id="${b.id}" style="${hasData ? '' : 'opacity:0.6;'}">${b.abbrev} ${b.name}</div>`;
-                    
-                    // 如果有数据且是当前选中的书，显示章节列表
-                    if (b.id === currentBookId && hasData) {
-                        const chapters = BIBLE_DATA[b.id].chapters || {};
-                        const chapterKeys = Object.keys(chapters).sort((a, b) => parseInt(a) - parseInt(b));
-                        html += `<div style="padding:2px 0;">`;
-                        chapterKeys.forEach(ch => {
-                            const isActive = parseInt(ch) === currentChapter ? 'active' : '';
-                            html += `<div class="chapter-item ${isActive}" data-book="${b.id}" data-chapter="${ch}">第${ch}章</div>`;
-                        });
-                        html += `</div>`;
-                    }
-                });
-                html += '</div>';
-            });
-            sidebar.innerHTML = html;
+    try {
+        const prompt = `
+            请提供圣经《${book.name}》第${chapter}章的中英文对照经文（中文和合本 + 英文WEB译本）。
+            同时提供：
+            1. 历史背景（150字左右）
+            2. 文学关联（150字左右）
+            3. 深度阅读思考（200字左右，包含2-3个🔹标记的思考点和2个💭标记的延伸问题）
             
-            // 绑定书卷点击事件
-            sidebar.querySelectorAll('.book-item:not(.chapter-item)').forEach(el => {
-                el.addEventListener('click', () => {
-                    const id = el.dataset.id;
-                    if (id) {
-                        const hasData = BIBLE_DATA[id] ? true : false;
-                        if (hasData) {
-                            loadChapter(id, 1);
-                        } else {
-                            loadChapter(id, 1);
-                        }
-                    }
-                });
-            });
+            请以JSON格式输出：
+            {
+                "verses": [
+                    {"verse": 1, "zh": "中文经文", "en": "英文经文"},
+                    ...
+                ],
+                "history": "历史背景",
+                "story": "文学关联",
+                "thought": "深度阅读思考（包含🔹和💭）"
+            }
             
-            // 绑定章节点击事件
-            sidebar.querySelectorAll('.chapter-item').forEach(el => {
-                el.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const bookId = el.dataset.book;
-                    const chapter = parseInt(el.dataset.chapter);
-                    if (bookId && chapter) {
-                        loadChapter(bookId, chapter);
-                    }
-                });
-            });
-        }
+            注意：只输出JSON，不要有其他内容。经文要完整，逐节输出。
+        `;
 
-        // ============================================================
-        // 5. 笔记
-        // ============================================================
-        function getNoteKey(bookId, chapter) {
-            return `note_${bookId}_${chapter}`;
-        }
+        const data = await callWorker([
+            { role: 'system', content: '你是一位圣经文献学与古代近东历史的学术研究者，回答需保持客观、中立、学术化，不涉及传教。' },
+            { role: 'user', content: prompt }
+        ]);
 
-        function loadNote(bookId, chapter) {
-            const key = getNoteKey(bookId, chapter);
-            const note = localStorage.getItem(key);
-            document.getElementById('noteInput').value = note || '';
-            document.getElementById('noteStatus').textContent = note ? '📌 已加载笔记' : '📌 无笔记';
-        }
-
-        function saveNote(bookId, chapter) {
-            const key = getNoteKey(bookId, chapter);
-            localStorage.setItem(key, document.getElementById('noteInput').value);
-            document.getElementById('noteStatus').textContent = '✅ 已保存';
-            setTimeout(() => { document.getElementById('noteStatus').textContent = '📌 已保存'; }, 1500);
-        }
-
-        // ============================================================
-        // 6. 深度阅读思考
-        // ============================================================
-        const DEEP_INSIGHTS = {
-            'gen_1': {
-                history: '创世记第1章是希伯来圣经的开篇，传统认为成书于摩西时代（约主前15-13世纪）。这一章的文学形式极具特色，采用六日结构，每日以"有晚上，有早晨"收尾，形成清晰的时间框架。这种结构在古代近东文献中独树一帜，展现了希伯来文学对秩序与节奏的独特追求。',
-                story: '创世记第1章的叙事与古代近东的其他创世神话（如巴比伦的《埃努玛·埃利什》）形成鲜明对比。后者强调众神之间的冲突与暴力，而本章则呈现一位超越性的神，通过话语创造秩序。这种"话语创造"的主题在后续的圣经叙事中反复出现，成为理解圣经世界观的关键线索。',
-                thought: '🔹 "起初"这个词开启了一个宏大的叙事框架。它不是在讨论宇宙的"如何"起源，而是在宣告一个根本性的主张：一切存在都有其源头，这个源头具有意志与目的。\n\n🔹 光的创造先于光体的创造（第3节 vs 第14节），暗示了一个重要的哲学命题：光作为一种原则或秩序，优先于其物理载体。这让人思考：我们所见的物质世界背后，是否存在着更深层的意义结构？\n\n🔹 "神看着是好的"出现了七次。这不仅是美学判断，更是对创造本身的肯定。在一个充斥着混沌与虚无的古代世界观中，这种对存在的积极肯定具有深远的意义。\n\n🔹 人类作为"神的形象"被创造（第26节），意味着人被赋予了一种超越其他受造物的尊严与责任。这个形象不是静态的赋予，而是一种动态的呼召——人受邀参与对世界的管理，成为秩序的维护者而非破坏者。',
-                questions: '💭 当我们说"世界是有意义的"时，这个信念建立在什么样的基础之上？\n💭 "管理"与"控制"有什么区别？在人与世界的关系中，我们应该扮演什么样的角色？\n💭 如果"光"象征着对真理的寻求，那么今天的我们如何在自己的生活中"寻找光"？'
-            },
-            'gen_2': {
-                history: '创世记第2章将视角从宏观的宇宙创造聚焦于"人"的被造。这一章常被视为对第1章创造的"放大"，通过更细致的叙事，揭示了人与土地、人与动物、人与人之间的深层关系。希伯来原文中"亚当"（adam）与"土地"（adamah）同源，暗示人是一种"有灵的尘土"，既属乎物质，又超越物质。',
-                story: '第2章与第1章在叙事上形成互补：第1章以"神说"为主导，展现创造的宏大秩序；第2章则以"耶和华神"为叙事主体，采用拟人化的笔法，描绘神"造""安置""吩咐"等具体行动。这种叙事策略在古代近东文学中被称为"重复与扩展"，通过不同视角深化同一主题。',
-                thought: '🔹 "耶和华神用地上的尘土造人"——人与土地之间建立了本质性的联结。这不是一种统治关系，而是一种共生关系：人从土地而来，最终也要归于土地。这提醒我们：人在使用自然资源时，应当怀有敬畏与感恩。\n\n🔹 "将他安置在伊甸园，使他修理，看守"——人被赋予的不是专制统治，而是"服侍"与"守护"。这两个动词在希伯来语中常用于描述祭司在圣所的职分，暗示人的工作具有某种神圣的维度。\n\n🔹 "那人独居不好"——孤独被宣告为"不好"，这是创造叙事中首次出现的负面判断。这暗示：关系不是创造的附加品，而是创造秩序中不可或缺的部分。',
-                questions: '💭 工作与休息之间应该如何保持平衡？\n💭 "修理"与"看守"这两个词，对我们理解人与世界的关系有什么启发？'
-            },
-            'gen_3': {
-                history: '创世记第3章是圣经叙事中最具文学张力与哲学深度的篇章之一。它讲述了一个关于"自由意志""诱惑""后果"的故事。在古代近东文学中，这一章与苏美尔神话《阿达帕的故事》等文献有主题上的呼应，但希伯来叙事的独特之处在于：它不强调神与人之间的敌对，而是聚焦于"关系破裂"这一主题。',
-                story: '本章的叙事结构极具匠心：以蛇的对话开篇，以人的悖逆为高潮，以神的审判为转折，以被逐出伊甸园为结局。这一"上升—转折—下降"的叙事弧线，成为后世文学中"堕落叙事"的原型。值得注意的是，故事中没有第三方叙述者评论人物的行为，而是通过对话与行动让读者自行判断。',
-                thought: '🔹 "你们便如神能知道善恶"——蛇的诱惑揭示了人类最深层的欲望：超越被造物的界限，成为自我判断善恶的主体。但这种"如神"的追求，却以"不像人"为代价——人失去了对自身有限性的认知。\n\n🔹 "你在哪里？"——神没有直接审判，而是先发出呼唤。这是一个邀请人悔改的时刻，也是一个揭示人已迷失的时刻。\n\n🔹 "女人的后裔要伤你的头"——这句话在叙事中埋下了盼望的种子。它暗示：即使人在自由中误用了自由，历史仍然朝着一个方向前进——对秩序的修复。',
-                questions: '💭 "知道善恶"意味着什么？它是福还是祸？\n💭 当人选择隐藏而不愿面对时，这反映了怎样的人性？'
-            },
-            'gen_4': {
-                history: '创世记第4章记录了人类历史上第一起暴力事件——该隐杀亚伯。这一章从兄弟关系入手，探讨了嫉妒、愤怒、责任与刑罚等主题。在文学传统中，该隐与亚伯的故事成为探讨"兄弟竞争"与"暴力起源"的经典文本。',
-                story: '本章的叙事以"献祭"开始，以"流放"结束。神对该隐的提问——"你兄弟亚伯在哪里？"——与第3章对亚当的提问——"你在哪里？"——形成呼应。这两次提问共同构成一个主题：神在寻找迷失的人。该隐的回答"我岂是看守我兄弟的么"则揭示了另一种迷失——对他人命运的冷漠。',
-                thought: '🔹 "你若行得好，岂不蒙悦纳？"——神并未拒绝该隐，而是在他发怒时向他发出警告：愤怒本身不是问题，关键在于人如何面对它。\n\n🔹 "罪就伏在门前"——这是圣经中第一次将"罪"拟人化。罪被描述为一种蛰伏的势力，等待吞噬人。这一意象深刻地揭示了道德的张力：人有选择的能力，但也有被欲望吞没的危险。\n\n🔹 "你兄弟的血有声音从地里向我哀告"——土地的诉说，将暴力与整个受造界联系起来。人不仅伤害他人，也在伤害承载生命的土地。',
-                questions: '💭 该隐的愤怒从何而来？我们如何在情绪中做出选择？\n💭 "看守"兄弟的责任意味着什么？'
-            },
-            'gen_5': {
-                history: '创世记第5章是一份"家谱"，记录了从亚当到挪亚的十代传承。这份家谱在形式上具有明显的结构化特征：每个人的生平都以"活到X岁生了Y，又活了Z年"的公式呈现。这种重复的文体在古代近东文化中具有重要的文献意义，既是对历史的记录，也是对"传承"这一主题的强调。',
-                story: '第5章的家谱中有一个特例——以诺。"以诺与神同行，神将他取去，他就不在世了。"这个叙述打破了家谱的公式化结构，暗示了一种超越死亡的可能性。以诺的存在成为家谱中的"异象"，指向一种不同于"生与死"的生命模式。',
-                thought: '🔹 家谱中的"生"与"死"构成了人类的共同命运。每个人都有一个开始，也都有一个结束。这种结构让读者意识到：人的生命不是孤立的，而是被编织在世代传承的网络中。\n\n🔹 "以诺与神同行"——这是一个简短却深刻的描述。"同行"意味着方向的一致、步伐的协调。它暗示了一种超越宗教仪式的生命状态：在日常生活中与某种更高的意义联结。\n\n🔹 玛土撒拉这个名字的意思是"他死后，审判将临"。这个名字本身就是一个预言，将个人的生命与历史的命运联系在一起。',
-                questions: '💭 家谱记录的是什么样的历史？它如何塑造我们对"传承"的理解？\n💭 "与神同行"对你来说意味着什么？'
-            },
-            'gen_6': {
-                history: '创世记第6章标志着叙事的转折——人类从"创造"走向"毁灭"。在洪水叙事的前奏中，本章描述了人类罪恶的泛滥与神心中的忧伤。这段文字充满了神学张力：神为何"后悔"造人？这个"后悔"又意味着什么？',
-                story: '第6章的叙事结构呈"V"形：从人类的败坏（1-8节）到挪亚的蒙恩（8节），再到神的审判（13节）和方舟的建造（14-22节）。挪亚的"蒙恩"成为黑暗中的一个转折点，使得叙事不至于坠入绝望。',
-                thought: '🔹 "耶和华就后悔造人在地上，心中忧伤"——这里的"后悔"不是指神犯了错，而是指创造与毁灭之间的张力。神的忧伤是对人选择的回应，而非对其自身计划的否定。\n\n🔹 "挪亚是个义人，在当时的世代是个完全人"——"义人"不是指无罪的完人，而是在一个普遍败坏的时代中选择了不同方向的人。挪亚的"与神同行"（6:9）表明：他的"义"体现在关系的维持中。\n\n🔹 方舟的建造——这是一个"信心的行动"。在未见洪水之时，挪亚照着神的吩咐建造方舟。这种"未见之事的实底"构成了信心叙事的核心。',
-                questions: '💭 "后悔"与"忧伤"如何帮助我们理解神与人的关系？\n💭 在一个普遍败坏的时代，一个人如何保持不同的方向？'
-            },
-            'gen_7': {
-                history: '创世记第7章详细记录了洪水的来临与方舟的拯救。这段叙事以"四十昼夜"的时间框架和精确的日期（"二月十七日"）为特征，体现了希伯来叙事对历史事实的关注。在洪水文学传统中，这一章与古代美索不达米亚的《吉尔伽美什史诗》中的洪水故事有相似之处，但希伯来版本强调了"审判中的拯救"这一核心主题。',
-                story: '第7章的叙事通过重复的结构强化了主题：挪亚"遵着耶和华所吩咐的行了"（5节、9节、16节）。这种重复不仅是对挪亚顺服的强调，更是一种文学手法——通过重复的句式，让读者感受到行动的确定性与必要性。',
-                thought: '🔹 "耶和华就把他关在方舟里头"——这个细节具有深刻的象征意义。"关"这个动作表明：拯救不是人自己能完成的，而是需要被接纳、被保护。方舟的门是神亲手关上的。\n\n🔹 "水势比山高过十五肘"——洪水覆盖了"天下"最高的山。这意味着：没有任何地上的势力可以抵御这场审判。所有的依靠都被冲走了，只剩下方舟。\n\n🔹 洪水的叙事不仅是对审判的记录，更是对"新的开始"的预备。只有经历了水的洗礼，才能进入新的创造。',
-                questions: '💭 方舟作为"拯救的容器"，在当代语境中可以有什么样的象征意义？\n💭 "被关在方舟里"——被动接受拯救，这对我们理解"救赎"有什么启发？'
-            },
-            'gen_8': {
-                history: '创世记第8章记录了洪水退去的过程，以及挪亚离开方舟后的第一件事——献祭。本章的叙事节奏从"暴雨"转向"退水"，从"毁灭"转向"新开始"。这一章与第1章的创造叙事形成呼应，被视为"第二次创造"的序幕。',
-                story: '本章的核心意象是"鸽子"。挪亚先后三次放出鸽子：第一次鸽子无处落脚，返回；第二次鸽子叼着橄榄叶返回；第三次鸽子不再回来。这个三次重复的叙事节奏，不仅展现了洪水退去的过程，更象征着"希望"与"和平"在审判之后的回归。橄榄叶也因此成为和平的象征。',
-                thought: '🔹 "神记念挪亚"——"记念"不是被动的回忆，而是主动的行动。神的"记念"意味着祂没有忘记在方舟中的人和动物，祂的关注是拯救的起点。\n\n🔹 鸽子叼着橄榄叶——这个意象成为人类文化中"和平"的永恒象征。它暗示：在审判之后，仍有新的可能。\n\n🔹 "挪亚筑了一座坛"——离开方舟后，挪亚所做的第一件事不是建造自己的房屋，而是献祭。这个顺序揭示了挪亚的价值排序：先与神建立关系，再开始新的生活。',
-                questions: '💭 "神记念"对我们理解"等待"有什么意义？\n💭 为什么挪亚先筑坛再建屋？这个次序对我们有什么启发？'
-            },
-            'gen_9': {
-                history: '创世记第9章记录了神与挪亚所立的"永约"，并以"彩虹"作为立约的记号。这是圣经中第一次使用"约"这一概念，标志着神与人之间关系的制度化。在洪水之后的叙事中，本章既是对过去的总结，也是对未来的承诺。',
-                story: '本章的叙事可分为三个部分：立约（1-17节）、挪亚醉酒（20-23节）、对含的咒诅和对闪、雅弗的祝福（24-27节）。这三个部分形成张力：一方面是对人类未来的祝福与应许，另一方面是人类内部的失败与分裂。挪亚的醉酒与诅咒暗示：即使经历了审判，人仍然面对道德困境。',
-                thought: '🔹 "我把虹放在云彩中"——彩虹是一种自然现象，但在这里被赋予了神学意义：它成为"应许"的可见标记。神的约不是写在石碑上，而是写在天地之间。\n\n🔹 "凡流人血的，他的血也必被人所流"——这里确立了一个基本的公义原则：人的生命具有神圣的价值，因为人是"照神的形像造的"。这个原则成为后世理解"生命尊严"的基础。\n\n🔹 挪亚的醉酒与含的"看见"——含的行为与闪、雅弗的"倒退着进去"形成对比。两种对"赤身"的态度，象征着尊重与不尊重之间的区别。',
-                questions: '💭 彩虹作为立约的记号，如何帮助我们在自然中寻找意义？\n💭 "尊重"在人与人的关系中扮演什么角色？'
-            },
-            'gen_10': {
-                history: '创世记第10章被称为"列国表"，记录了挪亚三个儿子——闪、含、雅弗——的后裔如何分散在各地，形成邦国。这份名单在古代近东文献中具有重要的地理与政治意义，它不仅是家谱记录，也是一幅古代世界的"民族地图"。',
-                story: '第10章的结构是对称的：先记录雅弗的后裔（2-5节），再记录含的后裔（6-20节），最后记录闪的后裔（21-31节）。这种排列可能反映了作者对"中心"与"边缘"的理解。值得注意的是，第10章中提到的许多民族与地名，在后续的圣经叙事中都会重新出现。',
-                thought: '🔹 列国表将全人类追溯至同一个源头——挪亚的三个儿子。这意味着：尽管人类在语言与文化上分化，但所有人共享同一个起源。这种"共同起源"的理念具有深刻的人文关怀。\n\n🔹 宁录被描述为"世上英雄之首"和"英勇的猎户"。这个描述意味深长："英雄"在世俗文化中被尊崇，但在希伯来叙事中，"英雄"往往与"对抗神"联系在一起。宁录的城邦"巴别"（10:10）预示了第11章中巴别塔的叙事。\n\n🔹 列国表的最后一句总结道："洪水以后，他们在地上分为邦国。"这句话将第10章与第11章的巴别塔故事联系起来，构成了从"合一"到"分散"的叙事弧线。',
-                questions: '💭 列国表试图表达什么样的"世界秩序"理念？\n💭 "共同起源"的理念如何影响我们对"他者"的态度？'
-            }
-        };
-
-        function generateInsights(bookId, chapter) {
-            const key = `${bookId}_${chapter}`;
-            const data = DEEP_INSIGHTS[key];
-
-            if (data) {
-                document.querySelector('#historyCard p').innerHTML = data.history;
-                document.querySelector('#storyCard p').innerHTML = data.story;
-                document.querySelector('#futureCard p').innerHTML = data.history.split('。')[0] +
-                    '。这一叙事框架对后世的神学、哲学与文学产生了深远的影响，成为西方文明探讨"起源"与"秩序"问题的经典文本。';
-
-                let thoughtHtml = data.thought.replace(/\n/g, '<br>');
-                if (data.questions) {
-                    thoughtHtml += `<span class="thought-question">🧠 延伸思考：<br>${data.questions.replace(/\n/g, '<br>')}</span>`;
-                }
-                document.querySelector('#thoughtCard p').innerHTML = thoughtHtml;
+        // 解析 JSON
+        let result;
+        try {
+            const content = data.choices[0].message.content;
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                result = JSON.parse(jsonMatch[0]);
             } else {
-                document.querySelector('#historyCard p').innerHTML = '该卷书的历史背景资料正在完善中...';
-                document.querySelector('#storyCard p').innerHTML = '文学关联分析正在准备中...';
-                document.querySelector('#futureCard p').innerHTML = '文本的深远意义正在梳理中...';
-                document.querySelector('#thoughtCard p').innerHTML =
-                    '📖 阅读圣经文献时，建议关注叙事结构、人物关系与主题发展。每个文本都承载着特定的历史语境与思想传统，需要耐心解读。';
+                result = JSON.parse(content);
             }
+        } catch (e) {
+            console.error('JSON解析失败:', e);
+            display.innerHTML = `<p style="color:var(--text-secondary);white-space:pre-wrap;">${data.choices[0].message.content}</p>`;
+            return;
         }
 
-        // ============================================================
-        // 7. 每日读经计划（新约260章，一年读完）
-        // ============================================================
-        function generateReadingPlan() {
-            const plan = [];
-            let day = 1;
-            let chapterIndex = 0;
-
-            const ntChapterList = [];
-            NT_BOOKS.forEach(book => {
-                for (let ch = 1; ch <= book.chapters; ch++) {
-                    ntChapterList.push({
-                        bookId: book.id,
-                        bookAbbrev: book.abbrev,
-                        chapter: ch
-                    });
-                }
-            });
-
-            const totalNTChapters = ntChapterList.length;
-
-            while (chapterIndex < totalNTChapters) {
-                const isWeekend = (day % 7 === 0 || day % 7 === 6);
-                const dailyCount = isWeekend ? 1 : 2;
-
-                let dayChapters = [];
-                for (let i = 0; i < dailyCount && chapterIndex < totalNTChapters; i++) {
-                    dayChapters.push(ntChapterList[chapterIndex]);
-                    chapterIndex++;
-                }
-
-                if (chapterIndex >= totalNTChapters && dayChapters.length === 0 && day > 1) {
-                    break;
-                }
-
-                plan.push({
-                    day: day,
-                    chapters: dayChapters,
-                    done: false
-                });
-                day++;
-            }
-
-            while (plan.length < 365) {
-                plan.push({
-                    day: plan.length + 1,
-                    chapters: [],
-                    done: true
-                });
-            }
-
-            return plan;
-        }
-
-        let readingPlan = [];
-
-        function initReadingPlan() {
-            readingPlan = generateReadingPlan();
-
-            const now = new Date();
-            const start = new Date(now.getFullYear(), 0, 1);
-            const dayOfYear = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
-
-            readingPlan.forEach((p, idx) => {
-                if (idx + 1 <= dayOfYear) {
-                    p.done = true;
-                }
-                if (idx + 1 === dayOfYear) {
-                    p.isToday = true;
-                }
-            });
-
-            const readChapters = readingPlan.filter(p => p.done).reduce((sum, p) => sum + p.chapters.length, 0);
-            const total = 260;
-            const percent = (readChapters / total * 100).toFixed(1);
-
-            document.getElementById('progressFill').style.width = percent + '%';
-            document.getElementById('progressText').textContent = `${readChapters} / ${total} 章（新约）`;
-            document.getElementById('progressDay').textContent = `第 ${dayOfYear} 天`;
-
-            renderPlanList();
-        }
-
-        function renderPlanList() {
-            const container = document.getElementById('planList');
+        // 渲染经文
+        if (result.verses && result.verses.length > 0) {
             let html = '';
-
-            readingPlan.forEach((p, idx) => {
-                const dayLabel = p.chapters.length > 0 ?
-                    p.chapters.map(c => `${c.bookAbbrev} ${c.chapter}`).join('、') :
-                    '🎉 已完成全部新约！';
-
-                let statusClass = 'pending';
-                let statusText = '⏳ 待读';
-                if (p.isToday) {
-                    statusClass = 'today';
-                    statusText = '📌 今日';
-                } else if (p.done && p.chapters.length > 0) {
-                    statusClass = 'done';
-                    statusText = '✅ 已读';
-                } else if (p.chapters.length === 0) {
-                    statusClass = 'done';
-                    statusText = '🎉 完成';
-                }
-
-                const onClick = p.chapters.length > 0 ?
-                    `onclick="loadChapter('${p.chapters[0].bookId}', ${p.chapters[0].chapter})"` :
-                    '';
-
-                html += `
-                    <div class="plan-day" ${onClick}>
-                        <span class="day-num">第${p.day}天</span>
-                        <span class="day-reading">📖 ${dayLabel}</span>
-                        <span class="day-status ${statusClass}">${statusText}</span>
-                    </div>
-                `;
+            result.verses.forEach(v => {
+                html += `<div class="verse-block">`;
+                html += `<span class="v">${v.verse}</span>`;
+                html += `<span class="zh">${v.zh || ''}</span>`;
+                if (v.en) html += `<span class="en">${v.en}</span>`;
+                html += `</div>`;
             });
-
-            container.innerHTML = html;
+            display.innerHTML = html;
+        } else {
+            display.innerHTML = `<p style="color:var(--text-muted);">暂无经文数据</p>`;
         }
 
-        // ============================================================
-        // 8. 搜索
-        // ============================================================
-        function performSearch() {
-            const query = document.getElementById('searchInput').value.trim();
-            const type = document.getElementById('searchType').value;
+        if (result.history) document.querySelector('#historyCard p').textContent = result.history;
+        if (result.story) document.querySelector('#storyCard p').textContent = result.story;
+        if (result.thought) {
+            const thoughtHtml = result.thought.replace(/\n/g, '<br>');
+            document.querySelector('#thoughtCard p').innerHTML = thoughtHtml;
+            document.querySelector('#futureCard p').textContent = result.thought.substring(0, 100) + '...';
+        }
 
-            if (!query) { alert('请输入搜索内容'); return; }
+    } catch (error) {
+        console.error('加载失败:', error);
+        display.innerHTML = `<p style="color:#c0392b;padding:20px;">⚠️ 加载失败：${error.message}</p>`;
+        document.querySelector('#historyCard p').textContent = '加载失败，请重试';
+        document.querySelector('#storyCard p').textContent = '加载失败，请重试';
+        document.querySelector('#futureCard p').textContent = '加载失败，请重试';
+        document.querySelector('#thoughtCard p').textContent = '加载失败，请重试';
+    }
 
-            const results = document.getElementById('searchResults');
-            results.innerHTML = '';
-            results.classList.add('active');
+    loadNote(bookId, chapter);
+}
 
-            let found = false;
+// ============================================================
+// 问答
+// ============================================================
+async function askQuestion() {
+    const input = document.getElementById('qaInput');
+    const question = input.value.trim();
+    if (!question) { alert('请输入问题'); return; }
 
-            if (type === 'all' || type === 'person') {
-                for (const [name, data] of Object.entries(PERSON_DICT)) {
-                    if (name.includes(query) || query.includes(name)) {
-                        found = true;
-                        const div = document.createElement('div');
-                        div.className = 'result-item';
-                        div.innerHTML = `<span class="ref">👤 人物</span> ${name} — ${data.sub}`;
-                        div.addEventListener('click', () => showPopup('person', name));
-                        results.appendChild(div);
-                    }
+    const answerBox = document.getElementById('qaAnswer');
+    answerBox.textContent = '🤔 AI 正在思考...';
+    answerBox.className = 'qa-answer show';
+
+    try {
+        const prompt = `
+            请回答以下关于圣经的问题。要求：
+            1. 保持客观、学术化的语气
+            2. 不涉及传教或信仰劝导
+            3. 基于圣经文本和学术研究回答
+            4. 如果问题与当前章节（${currentBookId} 第${currentChapter}章）相关，请结合该章节内容
+            
+            问题：${question}
+        `;
+
+        const data = await callWorker([
+            { role: 'system', content: '你是一位圣经文献学与古代近东历史的学术研究者，回答需保持客观、中立、学术化，不涉及传教。' },
+            { role: 'user', content: prompt }
+        ]);
+
+        if (data.choices && data.choices[0]) {
+            answerBox.innerHTML = data.choices[0].message.content.replace(/\n/g, '<br>');
+        } else {
+            answerBox.textContent = '⚠️ 未能获取回答，请重试。';
+        }
+    } catch (error) {
+        answerBox.textContent = `⚠️ 错误：${error.message}`;
+    }
+}
+
+// ============================================================
+// 侧边栏
+// ============================================================
+function renderSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    let html = '';
+    const groups = [...new Set(BIBLE_BOOKS.map(b => b.group))];
+    groups.forEach(g => {
+        html += `<div class="sidebar-group"><h4>${g}</h4>`;
+        BIBLE_BOOKS.filter(b => b.group === g).forEach(b => {
+            const active = b.id === currentBookId ? 'active' : '';
+            html += `<div class="book-item ${active}" data-id="${b.id}">${b.abbrev} ${b.name}</div>`;
+            if (b.id === currentBookId) {
+                html += `<div style="padding:2px 0;">`;
+                for (let ch = 1; ch <= Math.min(b.chapters, 50); ch++) {
+                    const isActive = ch === currentChapter ? 'active' : '';
+                    html += `<div class="chapter-item ${isActive}" data-book="${b.id}" data-chapter="${ch}">第${ch}章</div>`;
                 }
-            }
-
-            if (type === 'all' || type === 'place') {
-                for (const [name, data] of Object.entries(PLACE_DICT)) {
-                    if (name.includes(query) || query.includes(name)) {
-                        found = true;
-                        const div = document.createElement('div');
-                        div.className = 'result-item';
-                        div.innerHTML = `<span class="ref">📍 地名</span> ${name} — ${data.sub}`;
-                        div.addEventListener('click', () => showPopup('place', name));
-                        results.appendChild(div);
-                    }
+                if (b.chapters > 50) {
+                    html += `<div style="padding:3px 14px 3px 28px;font-size:11px;color:var(--text-muted);">...共${b.chapters}章</div>`;
                 }
+                html += `</div>`;
             }
-
-            if (type === 'all' || type === 'word') {
-                for (const [bookId, bookData] of Object.entries(BIBLE_DATA)) {
-                    const book = BIBLE_BOOKS.find(b => b.id === bookId);
-                    if (!book) continue;
-                    const chapters = bookData.chapters || {};
-                    for (const [chNum, chData] of Object.entries(chapters)) {
-                        for (const [vNum, vData] of Object.entries(chData)) {
-                            if (vData.zh && vData.zh.includes(query)) {
-                                found = true;
-                                const div = document.createElement('div');
-                                div.className = 'result-item';
-                                const preview = vData.zh.substring(0, 40);
-                                div.innerHTML =
-                                    `<span class="ref">📖 ${book.abbrev} ${chNum}:${vNum}</span> ${preview}...`;
-                                div.addEventListener('click', () => loadChapter(bookId, parseInt(chNum)));
-                                results.appendChild(div);
-                                if (results.children.length > 50) break;
-                            }
-                        }
-                        if (results.children.length > 50) break;
-                    }
-                    if (results.children.length > 50) break;
-                }
-            }
-
-            if (!found) {
-                results.innerHTML = `<div class="no-result">🔍 未找到与 "${query}" 相关的内容</div>`;
-            }
-        }
-
-        // ============================================================
-        // 9. 弹出
-        // ============================================================
-        function showPopup(type, name) {
-            const overlay = document.getElementById('popupOverlay');
-            const popup = document.getElementById('badgePopup');
-            const title = document.getElementById('popupTitle');
-            const sub = document.getElementById('popupSub');
-            const body = document.getElementById('popupBody');
-
-            let data;
-            if (type === 'person') data = PERSON_DICT[name];
-            else if (type === 'place') data = PLACE_DICT[name];
-            else return;
-            if (!data) return;
-
-            title.textContent = data.title;
-            sub.textContent = data.sub;
-            body.innerHTML = `<p>${data.body}</p>`;
-            overlay.classList.add('active');
-            popup.classList.add('active');
-        }
-
-        function hidePopup() {
-            document.getElementById('popupOverlay').classList.remove('active');
-            document.getElementById('badgePopup').classList.remove('active');
-        }
-
-        // ============================================================
-        // 10. 展开/折叠读经计划
-        // ============================================================
-        let planOpen = false;
-
-        function togglePlan() {
-            planOpen = !planOpen;
-            const panel = document.getElementById('readingPlanPanel');
-            const btn = document.getElementById('planToggleBtn');
-            if (planOpen) {
-                panel.classList.add('open');
-                btn.textContent = '📋 收起';
-            } else {
-                panel.classList.remove('open');
-                btn.textContent = '📋 展开';
-            }
-        }
-
-        // ============================================================
-        // 11. 数据加载完成后的初始化
-        // ============================================================
-        function initApp() {
-            if (!dataLoaded) {
-                setTimeout(initApp, 100);
-                return;
-            }
-            renderSidebar();
-            loadChapter('gen', 1);
-            initReadingPlan();
-
-            document.getElementById('planToggleBtn').addEventListener('click', togglePlan);
-        }
-
-        // 监听数据加载完成
-        document.addEventListener('DOMContentLoaded', function() {
-            const checkData = setInterval(function() {
-                if (window.BIBLE_DATA && Object.keys(window.BIBLE_DATA).length > 0) {
-                    BIBLE_DATA = window.BIBLE_DATA;
-                    dataLoaded = true;
-                    clearInterval(checkData);
-                    initApp();
-                }
-            }, 200);
-
-            setTimeout(function() {
-                if (!dataLoaded) {
-                    BIBLE_DATA = window.BIBLE_DATA || {};
-                    dataLoaded = true;
-                    initApp();
-                }
-            }, 10000);
         });
+        html += '</div>';
+    });
+    sidebar.innerHTML = html;
 
-        // ============================================================
-        // 12. UI 事件绑定
-        // ============================================================
-        document.addEventListener('DOMContentLoaded', function() {
-
-            // 字号
-            const slider = document.getElementById('fontSizeSlider');
-            const label = document.getElementById('fontSizeLabel');
-            slider.addEventListener('input', () => {
-                const size = parseInt(slider.value);
-                label.textContent = size;
-                document.documentElement.style.setProperty('--font-size', size + 'px');
-            });
-
-            // 主题
-            document.getElementById('themeSelect').addEventListener('change', function() {
-                document.documentElement.setAttribute('data-theme', this.value);
-                localStorage.setItem('bible_theme', this.value);
-            });
-            const savedTheme = localStorage.getItem('bible_theme');
-            if (savedTheme) {
-                document.documentElement.setAttribute('data-theme', savedTheme);
-                document.getElementById('themeSelect').value = savedTheme;
-            }
-
-            // 搜索
-            document.getElementById('searchBtn').addEventListener('click', performSearch);
-            document.getElementById('searchInput').addEventListener('keydown', (e) => { if (e.key === 'Enter')
-                    performSearch(); });
-
-            // 笔记
-            document.getElementById('saveNoteBtn').addEventListener('click', () => saveNote(currentBookId,
-                currentChapter));
-            document.getElementById('clearNoteBtn').addEventListener('click', () => {
-                if (confirm('确定清空笔记吗？')) {
-                    const key = getNoteKey(currentBookId, currentChapter);
-                    localStorage.removeItem(key);
-                    document.getElementById('noteInput').value = '';
-                    document.getElementById('noteStatus').textContent = '🗑️ 已清空';
-                }
-            });
-            document.getElementById('noteInput').addEventListener('blur', () => saveNote(currentBookId, currentChapter));
-
-            // 刷新洞察
-            document.getElementById('refreshInsightBtn').addEventListener('click', () => generateInsights(currentBookId,
-                currentChapter));
-
-            // 角标点击
-            document.getElementById('verseDisplay').addEventListener('click', (e) => {
-                const t = e.target;
-                if (t.classList.contains('badge-person')) showPopup('person', t.dataset.name);
-                else if (t.classList.contains('badge-place')) showPopup('place', t.dataset.name);
-            });
-
-            document.getElementById('closePopup').addEventListener('click', hidePopup);
-            document.getElementById('popupOverlay').addEventListener('click', hidePopup);
-            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hidePopup(); });
+    sidebar.querySelectorAll('.book-item').forEach(el => {
+        el.addEventListener('click', () => {
+            const id = el.dataset.id;
+            if (id) loadChapter(id, 1);
         });
-    </script>
+    });
+    sidebar.querySelectorAll('.chapter-item').forEach(el => {
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const bookId = el.dataset.book;
+            const chapter = parseInt(el.dataset.chapter);
+            if (bookId && chapter) loadChapter(bookId, chapter);
+        });
+    });
+}
 
+// ============================================================
+// 笔记
+// ============================================================
+function getNoteKey(bookId, chapter) { return `note_${bookId}_${chapter}`; }
+
+function loadNote(bookId, chapter) {
+    const key = getNoteKey(bookId, chapter);
+    const note = localStorage.getItem(key);
+    document.getElementById('noteInput').value = note || '';
+    document.getElementById('noteStatus').textContent = note ? '📌 已加载笔记' : '📌 无笔记';
+}
+
+function saveNote(bookId, chapter) {
+    const key = getNoteKey(bookId, chapter);
+    localStorage.setItem(key, document.getElementById('noteInput').value);
+    document.getElementById('noteStatus').textContent = '✅ 已保存';
+    setTimeout(() => { document.getElementById('noteStatus').textContent = '📌 已保存'; }, 1500);
+}
+
+// ============================================================
+// 每日读经计划
+// ============================================================
+function generateReadingPlan() {
+    const plan = [];
+    let day = 1, chapterIndex = 0;
+    const ntChapterList = [];
+    NT_BOOKS.forEach(book => {
+        for (let ch = 1; ch <= book.chapters; ch++) {
+            ntChapterList.push({ bookId: book.id, bookAbbrev: book.abbrev, chapter: ch });
+        }
+    });
+    const totalNTChapters = ntChapterList.length;
+    while (chapterIndex < totalNTChapters) {
+        const isWeekend = (day % 7 === 0 || day % 7 === 6);
+        const dailyCount = isWeekend ? 1 : 2;
+        let dayChapters = [];
+        for (let i = 0; i < dailyCount && chapterIndex < totalNTChapters; i++) {
+            dayChapters.push(ntChapterList[chapterIndex]);
+            chapterIndex++;
+        }
+        if (chapterIndex >= totalNTChapters && dayChapters.length === 0 && day > 1) break;
+        plan.push({ day: day, chapters: dayChapters, done: false });
+        day++;
+    }
+    while (plan.length < 365) {
+        plan.push({ day: plan.length + 1, chapters: [], done: true });
+    }
+    return plan;
+}
+
+let readingPlan = [];
+
+function initReadingPlan() {
+    readingPlan = generateReadingPlan();
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 1);
+    const dayOfYear = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
+    readingPlan.forEach((p, idx) => {
+        if (idx + 1 <= dayOfYear) p.done = true;
+        if (idx + 1 === dayOfYear) p.isToday = true;
+    });
+    const readChapters = readingPlan.filter(p => p.done).reduce((sum, p) => sum + p.chapters.length, 0);
+    const total = 260;
+    const percent = (readChapters / total * 100).toFixed(1);
+    document.getElementById('progressFill').style.width = percent + '%';
+    document.getElementById('progressText').textContent = `${readChapters} / ${total} 章（新约）`;
+    document.getElementById('progressDay').textContent = `第 ${dayOfYear} 天`;
+    renderPlanList();
+}
+
+function renderPlanList() {
+    const container = document.getElementById('planList');
+    let html = '';
+    readingPlan.forEach((p, idx) => {
+        const dayLabel = p.chapters.length > 0 ? p.chapters.map(c => `${c.bookAbbrev} ${c.chapter}`).join('、') : '🎉 已完成全部新约！';
+        let statusClass = 'pending', statusText = '⏳ 待读';
+        if (p.isToday) { statusClass = 'today'; statusText = '📌 今日'; } else if (p.done && p.chapters.length > 0) { statusClass = 'done'; statusText = '✅ 已读'; } else if (p.chapters.length === 0) { statusClass = 'done'; statusText = '🎉 完成'; }
+        const onClick = p.chapters.length > 0 ? `onclick="loadChapter('${p.chapters[0].bookId}', ${p.chapters[0].chapter})"` : '';
+        html += `<div class="plan-day" ${onClick}><span class="day-num">第${p.day}天</span><span class="day-reading">📖 ${dayLabel}</span><span class="day-status ${statusClass}">${statusText}</span></div>`;
+    });
+    container.innerHTML = html;
+}
+
+// ============================================================
+// 搜索
+// ============================================================
+function performSearch() {
+    const query = document.getElementById('searchInput').value.trim();
+    if (!query) { alert('请输入搜索内容'); return; }
+    document.getElementById('qaInput').value = `请帮我查找圣经中关于"${query}"的经文`;
+    document.getElementById('qaBtn').click();
+}
+
+// ============================================================
+// 初始化
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    // 字号
+    const slider = document.getElementById('fontSizeSlider');
+    const label = document.getElementById('fontSizeLabel');
+    slider.addEventListener('input', () => {
+        const size = parseInt(slider.value);
+        label.textContent = size;
+        document.documentElement.style.setProperty('--font-size', size + 'px');
+    });
+
+    // 主题
+    document.getElementById('themeSelect').addEventListener('change', function() {
+        document.documentElement.setAttribute('data-theme', this.value);
+        localStorage.setItem('bible_theme', this.value);
+    });
+    const savedTheme = localStorage.getItem('bible_theme');
+    if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeSelect').value = savedTheme;
+    }
+
+    // 搜索
+    document.getElementById('searchBtn').addEventListener('click', performSearch);
+    document.getElementById('searchInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') performSearch(); });
+
+    // 问答
+    document.getElementById('qaBtn').addEventListener('click', askQuestion);
+    document.getElementById('qaInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') askQuestion(); });
+
+    // 笔记
+    document.getElementById('saveNoteBtn').addEventListener('click', () => saveNote(currentBookId, currentChapter));
+    document.getElementById('clearNoteBtn').addEventListener('click', () => {
+        if (confirm('确定清空笔记吗？')) {
+            const key = getNoteKey(currentBookId, currentChapter);
+            localStorage.removeItem(key);
+            document.getElementById('noteInput').value = '';
+            document.getElementById('noteStatus').textContent = '🗑️ 已清空';
+        }
+    });
+    document.getElementById('noteInput').addEventListener('blur', () => saveNote(currentBookId, currentChapter));
+
+    // 刷新
+    document.getElementById('refreshInsightBtn').addEventListener('click', () => loadChapter(currentBookId, currentChapter));
+
+    // 计划
+    document.getElementById('planToggleBtn').addEventListener('click', function() {
+        const panel = document.getElementById('readingPlanPanel');
+        panel.classList.toggle('open');
+        this.textContent = panel.classList.contains('open') ? '📋 收起' : '📋 展开';
+    });
+
+    // 启动
+    renderSidebar();
+    loadChapter('gen', 1);
+    initReadingPlan();
+});
+</script>
 </body>
 </html>
