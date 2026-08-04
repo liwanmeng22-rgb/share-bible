@@ -654,10 +654,7 @@
     <div class="search-bar">
         <input type="text" id="searchInput" placeholder="搜索经文、人名、地名..." />
         <select id="searchType">
-            <option value="all">全部</option>
-            <option value="word">经文</option>
-            <option value="person">人物</option>
-            <option value="place">地名</option>
+            <option value="text">全本经文</option>
         </select>
         <button id="searchBtn">🔍 搜索</button>
     </div>
@@ -719,7 +716,7 @@
     </div>
     <div class="footer-disclaimer">
         <strong>📌 本站声明：</strong> 本网站所有内容仅供 <strong>学术研究、文学阅读及历史文化学习</strong> 之用。
-        <span style="display:block;margin-top:4px;font-size:10px;">🤖 由 DeepSeek API 驱动 · 实时生成</span>
+        <span style="display:block;margin-top:4px;font-size:10px;">📚 经文：公有领域《新标点和合本》与 World English Bible · 🤖 解读：DeepSeek</span>
     </div>
 </div>
 
@@ -731,7 +728,6 @@
     <div class="popup-body" id="popupBody"><p>简介内容...</p></div>
 </div>
 
-<script src="bible-data.js"></script>
 <script>
 // ============================================================
 // 圣经书籍列表（66卷）
@@ -822,10 +818,20 @@ function escapeHTML(value) {
     })[char]);
 }
 
-function getLocalChapter(bookId, chapter) {
-    const chapterData = window.BIBLE_DATA?.[bookId]?.chapters?.[String(chapter)];
-    if (!chapterData) return null;
-    return Object.entries(chapterData).map(([verse, text]) => ({ verse: Number(verse), zh: text.zh || '', en: text.en || '' }));
+const bookDataCache = new Map();
+
+async function getBookData(bookId) {
+    if (bookDataCache.has(bookId)) return bookDataCache.get(bookId);
+    const response = await fetch(`data/${bookId}.json`);
+    if (!response.ok) throw new Error(`经文数据库读取失败（${response.status}）`);
+    const data = await response.json();
+    bookDataCache.set(bookId, data);
+    return data;
+}
+
+async function getLocalChapter(bookId, chapter) {
+    const bookData = await getBookData(bookId);
+    return bookData.chapters?.[String(chapter)] || null;
 }
 
 function renderVerses(verses, display) {
@@ -835,19 +841,6 @@ function renderVerses(verses, display) {
 function updateDailyVerse(book, chapter, verses) {
     if (!todayPlan || todayPlan.chapters[0].bookId !== book.id || todayPlan.chapters[0].chapter !== chapter || !verses?.length) return;
     document.getElementById('dailyVerse').textContent = `“${verses[0].zh}” — ${book.name} ${chapter}:1`;
-}
-
-function showFallbackDailyVerse(dayOfYear) {
-    const pool = [];
-    Object.entries(window.BIBLE_DATA || {}).forEach(([bookId, bookData]) => {
-        const book = BIBLE_BOOKS.find(item => item.id === bookId);
-        Object.entries(bookData.chapters || {}).forEach(([chapter, verses]) => {
-            Object.entries(verses).forEach(([verse, text]) => pool.push({ book, chapter, verse, zh: text.zh }));
-        });
-    });
-    if (!pool.length) return;
-    const item = pool[(dayOfYear - 1) % pool.length];
-    document.getElementById('dailyVerse').textContent = `“${item.zh}” — ${item.book.name} ${item.chapter}:${item.verse}`;
 }
 
 // ⚠️ 重要：这是你的 Worker 地址
@@ -950,31 +943,16 @@ async function loadChapter(bookId, chapter) {
 
     const display = document.getElementById('verseDisplay');
     ['historyCard', 'storyCard', 'futureCard', 'thoughtCard'].forEach(id => document.querySelector(`#${id} p`).textContent = '章节解读加载中…');
-    const cacheKey = `bible_chapter_v2_${bookId}_${chapter}`;
-    let verses = getLocalChapter(bookId, chapter) || readCache(cacheKey);
-    if (verses?.length) {
+    display.innerHTML = '<div class="loading-container"><div class="sheep">🐑</div><div class="loading-text">正在读取经文数据库<span class="loading-dots"></span></div></div>';
+    try {
+        const verses = await getLocalChapter(bookId, chapter);
+        if (!verses?.length) throw new Error('本章经文数据缺失');
+        if (requestId !== chapterRequestId) return;
         renderVerses(verses, display);
         updateDailyVerse(book, chapter, verses);
         loadInsights(book, chapter, requestId);
-    } else {
-        display.innerHTML = '<div class="loading-container"><div class="sheep">🐑</div><div class="loading-text">首次加载本章经文，之后将自动缓存<span class="loading-dots"></span></div></div>';
-        try {
-            const data = await callWorker([
-                { role: 'system', content: '你是圣经文本数据助手。只输出有效JSON，不输出代码围栏、解释或字段说明。' },
-                { role: 'user', content: `提供《${book.name}》第${chapter}章完整逐节中英文对照（中文和合本、英文WEB）。严格返回JSON：{"verses":[{"verse":1,"zh":"中文","en":"English"}]}` }
-            ], { temperature: 0.1, max_tokens: 6000, timeout: 35000 });
-            const result = parseAIJSON(data);
-            if (!Array.isArray(result.verses) || !result.verses.length) throw new Error('没有经文数据');
-            verses = result.verses;
-            writeCache(cacheKey, verses);
-            if (requestId === chapterRequestId) {
-                renderVerses(verses, display);
-                updateDailyVerse(book, chapter, verses);
-                loadInsights(book, chapter, requestId);
-            }
-        } catch (error) {
-            if (requestId === chapterRequestId) display.innerHTML = `<div style="padding:28px;text-align:center;color:var(--text-muted);"><p>本章首次加载失败：${escapeHTML(error.message)}</p><button class="refresh-btn" style="float:none;margin-top:12px;" onclick="loadChapter('${bookId}', ${chapter})">重新加载</button></div>`;
-        }
+    } catch (error) {
+        if (requestId === chapterRequestId) display.innerHTML = `<div style="padding:28px;text-align:center;color:var(--text-muted);"><p>${escapeHTML(error.message)}</p><button class="refresh-btn" style="float:none;margin-top:12px;" onclick="loadChapter('${bookId}', ${chapter})">重新读取</button></div>`;
     }
     loadNote(bookId, chapter);
 }
@@ -1112,7 +1090,6 @@ function initReadingPlan() {
     todayPlan = readingPlan[dayOfYear - 1];
     updatePlanProgress(dayOfYear);
     updateTodayCard(now);
-    showFallbackDailyVerse(dayOfYear);
     renderPlanList();
 }
 
@@ -1171,19 +1148,24 @@ function renderPlanList() {
 // ============================================================
 // 搜索
 // ============================================================
-function findLocalResults(query) {
-    const results = [];
-    Object.entries(window.BIBLE_DATA || {}).forEach(([bookId, bookData]) => {
-        const book = BIBLE_BOOKS.find(item => item.id === bookId);
-        Object.entries(bookData.chapters || {}).forEach(([chapter, verses]) => {
-            Object.entries(verses).forEach(([verse, text]) => {
-                if ((text.zh || '').includes(query) || (text.en || '').toLowerCase().includes(query.toLowerCase())) {
-                    results.push({ bookId, chapter: Number(chapter), verse: Number(verse), ref: `${book?.name || bookId} ${chapter}:${verse}`, zh: text.zh, en: text.en });
-                }
-            });
+let searchIndexPromise = null;
+
+async function findLocalResults(query) {
+    if (!searchIndexPromise) {
+        searchIndexPromise = fetch('data/search.json').then(response => {
+            if (!response.ok) throw new Error('搜索索引读取失败');
+            return response.json();
         });
-    });
-    return results.slice(0, 20);
+    }
+    const index = await searchIndexPromise;
+    const results = [];
+    for (const [bookId, chapter, verse, zh] of index) {
+        if (!zh.includes(query)) continue;
+        const book = BIBLE_BOOKS.find(item => item.id === bookId);
+        results.push({ bookId, chapter, verse, ref: `${book?.name || bookId} ${chapter}:${verse}`, zh });
+        if (results.length >= 30) break;
+    }
+    return results;
 }
 
 function renderSearchResults(results, query, source = '') {
@@ -1205,26 +1187,15 @@ async function performSearch() {
     const query = document.getElementById('searchInput').value.trim();
     if (!query) { alert('请输入搜索内容'); return; }
     const button = document.getElementById('searchBtn');
-    const localResults = findLocalResults(query);
-    if (localResults.length) {
-        renderSearchResults(localResults, query, '经文库精确匹配');
-        return;
-    }
     button.disabled = true;
     button.textContent = '搜索中…';
     renderSearchResults([], query, '正在检索全本圣经…');
     try {
-        const typeLabel = document.getElementById('searchType').selectedOptions[0].textContent;
-        const data = await callWorker([
-            { role: 'system', content: '你是圣经经文检索助手。只返回有效JSON，不返回代码围栏、解释、字段说明或其他文字。' },
-            { role: 'user', content: `在全本圣经中按“${typeLabel}”查找“${query}”。返回最多12条最相关结果。严格使用JSON：{"results":[{"bookId":"gen","chapter":1,"verse":1,"ref":"创世记 1:1","zh":"中文经文","en":"English verse"}]}。bookId必须使用标准缩写，如gen、psa、mat、jhn。` }
-        ], { temperature: 0.2, max_tokens: 1800 });
-        const raw = data?.choices?.[0]?.message?.content || '';
-        const match = raw.match(/\{[\s\S]*\}/);
-        const parsed = match ? JSON.parse(match[0]) : { results: [] };
-        renderSearchResults(Array.isArray(parsed.results) ? parsed.results : [], query, 'AI 辅助检索，请以纸质圣经或可靠译本复核');
+        const results = await findLocalResults(query);
+        renderSearchResults(results, query, '全本《新标点和合本》精确检索');
     } catch (error) {
-        renderSearchResults([], query, '搜索服务暂时不可用，请稍后重试。');
+        searchIndexPromise = null;
+        renderSearchResults([], query, '搜索索引暂时无法读取，请刷新页面后重试。');
     } finally {
         button.disabled = false;
         button.textContent = '🔍 搜索';
