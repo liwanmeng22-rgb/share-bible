@@ -591,6 +591,41 @@
             .badge-popup { max-width: 92%; padding: 16px 16px; }
             .reading-plan-panel { padding: 8px 14px; max-height: 200px; }
         }
+
+        /* 2026 refresh: calmer hierarchy and a focused daily-reading entry */
+        body { padding: 20px; background: radial-gradient(circle at top, #fbf7f0 0, var(--bg-page) 48%); }
+        .app { border: 1px solid rgba(183,140,95,.14); box-shadow: 0 24px 70px rgba(70,50,32,.10); }
+        .disclaimer-banner { background: #3b332c; color: #f4ede5; }
+        .top-bar { padding-top: 16px; padding-bottom: 16px; }
+        .logo { font-size: 20px; }
+        .search-bar { position: relative; padding-top: 14px; padding-bottom: 14px; }
+        .search-bar input { padding: 11px 18px; background: var(--bg-app); }
+        .search-bar button { padding: 11px 24px; box-shadow: 0 6px 16px rgba(183,140,95,.22); }
+        .daily-card { margin: 18px 24px 6px; padding: 22px 24px; border-radius: 20px; color: #fff; background: linear-gradient(135deg, #76583d, #b78c5f); display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center; box-shadow: 0 14px 32px rgba(117,83,54,.18); }
+        .daily-eyebrow { font-size: 12px; opacity: .82; letter-spacing: 1.5px; margin-bottom: 8px; }
+        .daily-card h2 { font-size: 22px; margin-bottom: 7px; }
+        .daily-card blockquote { font-size: 15px; line-height: 1.8; opacity: .95; max-width: 760px; }
+        .daily-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+        .daily-actions button { border: 1px solid rgba(255,255,255,.45); border-radius: 40px; padding: 9px 16px; cursor: pointer; color: #fff; background: rgba(255,255,255,.13); }
+        .daily-actions button.primary { color: #684b33; background: #fff; border-color: #fff; font-weight: 700; }
+        .daily-actions button.done { background: #416b4d; color: #fff; border-color: rgba(255,255,255,.3); }
+        .search-results { border: 1px solid var(--border-color); box-shadow: 0 12px 30px rgba(54,40,28,.08); }
+        .search-results-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding-bottom:10px; border-bottom:1px solid var(--border-color); font-weight:700; }
+        .search-close { border:0; background:transparent; color:var(--text-muted); cursor:pointer; font-size:18px; }
+        .search-results .result-item { padding: 13px 4px; line-height: 1.65; }
+        .search-results .result-item:last-child { border-bottom: 0; }
+        .search-hint { color: var(--text-muted); font-size: 13px; padding-top: 10px; }
+        .verse-text .verse-block { padding: 8px 5px; border-radius: 8px; transition: background .2s; }
+        .verse-text .verse-block:hover { background: var(--bg-card); }
+        .reading-plan-panel .plan-day.is-today { background: rgba(183,140,95,.13); border: 1px solid rgba(183,140,95,.28); }
+        .plan-check { border: 1px solid var(--border-color); background: var(--bg-app); color: var(--text-secondary); border-radius: 20px; padding: 4px 9px; cursor: pointer; }
+        @media (max-width: 860px) {
+            body { padding: 0; }
+            .app { border-radius: 0; min-height: 100vh; }
+            .daily-card { margin: 12px 14px 4px; padding: 18px; grid-template-columns: 1fr; }
+            .daily-actions { justify-content: flex-start; }
+            .daily-card h2 { font-size: 19px; }
+        }
     </style>
 </head>
 <body>
@@ -629,11 +664,22 @@
     <div class="progress-bar">
         <span class="progress-label">📅 年度读经计划</span>
         <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-        <span id="progressText">0 / 260 章（新约）</span>
+        <span id="progressText">0 / 1189 章（全本）</span>
         <span style="font-size:11px;color:var(--text-muted);" id="progressDay">第 0 天</span>
         <button class="progress-toggle" id="planToggleBtn">📋 展开</button>
     </div>
     <div class="reading-plan-panel" id="readingPlanPanel"><div id="planList"></div></div>
+    <section class="daily-card" id="dailyCard">
+        <div>
+            <div class="daily-eyebrow" id="dailyDate">今日读经 · 一年一遍</div>
+            <h2 id="dailyTitle">正在准备今天的经文…</h2>
+            <blockquote id="dailyVerse">每天约 3–4 章，365 天读完整本圣经。</blockquote>
+        </div>
+        <div class="daily-actions">
+            <button class="primary" id="startTodayBtn">开始今日阅读</button>
+            <button id="completeTodayBtn">标记今日完成</button>
+        </div>
+    </section>
     <div class="main">
         <div class="sidebar" id="sidebar"></div>
         <div class="content" id="contentArea">
@@ -685,6 +731,7 @@
     <div class="popup-body" id="popupBody"><p>简介内容...</p></div>
 </div>
 
+<script src="bible-data.js"></script>
 <script>
 // ============================================================
 // 圣经书籍列表（66卷）
@@ -767,6 +814,41 @@ const NT_BOOKS = BIBLE_BOOKS.filter(b =>
 // ============================================================
 let currentBookId = 'gen';
 let currentChapter = 1;
+let todayPlan = null;
+
+function escapeHTML(value) {
+    return String(value ?? '').replace(/[&<>'"]/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    })[char]);
+}
+
+function getLocalChapter(bookId, chapter) {
+    const chapterData = window.BIBLE_DATA?.[bookId]?.chapters?.[String(chapter)];
+    if (!chapterData) return null;
+    return Object.entries(chapterData).map(([verse, text]) => ({ verse: Number(verse), zh: text.zh || '', en: text.en || '' }));
+}
+
+function renderVerses(verses, display) {
+    display.innerHTML = verses.map(v => `<div class="verse-block"><span class="v">${escapeHTML(v.verse)}</span><span class="zh">${escapeHTML(v.zh)}</span>${v.en ? `<span class="en">${escapeHTML(v.en)}</span>` : ''}</div>`).join('');
+}
+
+function updateDailyVerse(book, chapter, verses) {
+    if (!todayPlan || todayPlan.chapters[0].bookId !== book.id || todayPlan.chapters[0].chapter !== chapter || !verses?.length) return;
+    document.getElementById('dailyVerse').textContent = `“${verses[0].zh}” — ${book.name} ${chapter}:1`;
+}
+
+function showFallbackDailyVerse(dayOfYear) {
+    const pool = [];
+    Object.entries(window.BIBLE_DATA || {}).forEach(([bookId, bookData]) => {
+        const book = BIBLE_BOOKS.find(item => item.id === bookId);
+        Object.entries(bookData.chapters || {}).forEach(([chapter, verses]) => {
+            Object.entries(verses).forEach(([verse, text]) => pool.push({ book, chapter, verse, zh: text.zh }));
+        });
+    });
+    if (!pool.length) return;
+    const item = pool[(dayOfYear - 1) % pool.length];
+    document.getElementById('dailyVerse').textContent = `“${item.zh}” — ${item.book.name} ${item.chapter}:${item.verse}`;
+}
 
 // ⚠️ 重要：这是你的 Worker 地址
 const WORKER_URL = 'https://bible-proxy.liwanmeng22.workers.dev';
@@ -820,9 +902,16 @@ async function loadChapter(bookId, chapter) {
     document.querySelector('#futureCard p').textContent = 'AI 正在生成...';
     document.querySelector('#thoughtCard p').textContent = 'AI 正在生成...';
 
+    const localVerses = getLocalChapter(bookId, chapter);
+    if (localVerses) {
+        renderVerses(localVerses, display);
+        updateDailyVerse(book, chapter, localVerses);
+    }
+
     try {
         const prompt = `
             请提供圣经《${book.name}》第${chapter}章的中英文对照经文（中文和合本 + 英文WEB译本）。
+            除逐节英文译文外，所有标题、说明和分析必须使用中文；不要输出Markdown代码围栏、JSON字段说明或界面代码。
             同时提供：
             1. 历史背景（150字左右）
             2. 文学关联（150字左右）
@@ -859,21 +948,14 @@ async function loadChapter(bookId, chapter) {
             }
         } catch (e) {
             console.error('JSON解析失败:', e);
-            display.innerHTML = `<p style="color:var(--text-secondary);white-space:pre-wrap;">${data.choices[0].message.content}</p>`;
+            if (!localVerses) display.innerHTML = '<p style="color:var(--text-muted);padding:20px;">返回内容格式异常，未显示其中的代码片段。请点击“刷新内容”重试。</p>';
             return;
         }
 
         // 渲染经文
         if (result.verses && result.verses.length > 0) {
-            let html = '';
-            result.verses.forEach(v => {
-                html += `<div class="verse-block">`;
-                html += `<span class="v">${v.verse}</span>`;
-                html += `<span class="zh">${v.zh || ''}</span>`;
-                if (v.en) html += `<span class="en">${v.en}</span>`;
-                html += `</div>`;
-            });
-            display.innerHTML = html;
+            renderVerses(result.verses, display);
+            updateDailyVerse(book, chapter, result.verses);
         } else {
             display.innerHTML = `<p style="color:var(--text-muted);">暂无经文数据</p>`;
         }
@@ -881,14 +963,13 @@ async function loadChapter(bookId, chapter) {
         if (result.history) document.querySelector('#historyCard p').textContent = result.history;
         if (result.story) document.querySelector('#storyCard p').textContent = result.story;
         if (result.thought) {
-            const thoughtHtml = result.thought.replace(/\n/g, '<br>');
-            document.querySelector('#thoughtCard p').innerHTML = thoughtHtml;
+            document.querySelector('#thoughtCard p').textContent = result.thought;
             document.querySelector('#futureCard p').textContent = result.thought.substring(0, 100) + '...';
         }
 
     } catch (error) {
         console.error('加载失败:', error);
-        display.innerHTML = `<p style="color:#c0392b;padding:20px;">⚠️ 加载失败：${error.message}</p>`;
+        if (!localVerses) display.innerHTML = `<p style="color:#c0392b;padding:20px;">⚠️ 经文暂时无法加载，请稍后重试。</p>`;
         document.querySelector('#historyCard p').textContent = '加载失败，请重试';
         document.querySelector('#storyCard p').textContent = '加载失败，请重试';
         document.querySelector('#futureCard p').textContent = '加载失败，请重试';
@@ -927,7 +1008,7 @@ async function askQuestion() {
         ]);
 
         if (data.choices && data.choices[0]) {
-            answerBox.innerHTML = data.choices[0].message.content.replace(/\n/g, '<br>');
+            answerBox.textContent = data.choices[0].message.content;
         } else {
             answerBox.textContent = '⚠️ 未能获取回答，请重试。';
         }
@@ -950,12 +1031,9 @@ function renderSidebar() {
             html += `<div class="book-item ${active}" data-id="${b.id}">${b.abbrev} ${b.name}</div>`;
             if (b.id === currentBookId) {
                 html += `<div style="padding:2px 0;">`;
-                for (let ch = 1; ch <= Math.min(b.chapters, 50); ch++) {
+                for (let ch = 1; ch <= b.chapters; ch++) {
                     const isActive = ch === currentChapter ? 'active' : '';
                     html += `<div class="chapter-item ${isActive}" data-book="${b.id}" data-chapter="${ch}">第${ch}章</div>`;
-                }
-                if (b.chapters > 50) {
-                    html += `<div style="padding:3px 14px 3px 28px;font-size:11px;color:var(--text-muted);">...共${b.chapters}章</div>`;
                 }
                 html += `</div>`;
             }
@@ -1003,29 +1081,18 @@ function saveNote(bookId, chapter) {
 // 每日读经计划
 // ============================================================
 function generateReadingPlan() {
-    const plan = [];
-    let day = 1, chapterIndex = 0;
-    const ntChapterList = [];
-    NT_BOOKS.forEach(book => {
+    const chapters = [];
+    BIBLE_BOOKS.forEach(book => {
         for (let ch = 1; ch <= book.chapters; ch++) {
-            ntChapterList.push({ bookId: book.id, bookAbbrev: book.abbrev, chapter: ch });
+            chapters.push({ bookId: book.id, bookName: book.name, bookAbbrev: book.abbrev, chapter: ch });
         }
     });
-    const totalNTChapters = ntChapterList.length;
-    while (chapterIndex < totalNTChapters) {
-        const isWeekend = (day % 7 === 0 || day % 7 === 6);
-        const dailyCount = isWeekend ? 1 : 2;
-        let dayChapters = [];
-        for (let i = 0; i < dailyCount && chapterIndex < totalNTChapters; i++) {
-            dayChapters.push(ntChapterList[chapterIndex]);
-            chapterIndex++;
-        }
-        if (chapterIndex >= totalNTChapters && dayChapters.length === 0 && day > 1) break;
-        plan.push({ day: day, chapters: dayChapters, done: false });
-        day++;
-    }
-    while (plan.length < 365) {
-        plan.push({ day: plan.length + 1, chapters: [], done: true });
+    const plan = [];
+    let cursor = 0;
+    for (let day = 1; day <= 365; day++) {
+        const end = Math.round(day * chapters.length / 365);
+        plan.push({ day, chapters: chapters.slice(cursor, end), done: false });
+        cursor = end;
     }
     return plan;
 }
@@ -1037,40 +1104,131 @@ function initReadingPlan() {
     const now = new Date();
     const start = new Date(now.getFullYear(), 0, 1);
     const dayOfYear = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
+    const completed = new Set(JSON.parse(localStorage.getItem(`bible_plan_${now.getFullYear()}`) || '[]'));
     readingPlan.forEach((p, idx) => {
-        if (idx + 1 <= dayOfYear) p.done = true;
+        p.done = completed.has(p.day);
         if (idx + 1 === dayOfYear) p.isToday = true;
     });
+    todayPlan = readingPlan[dayOfYear - 1];
+    updatePlanProgress(dayOfYear);
+    updateTodayCard(now);
+    showFallbackDailyVerse(dayOfYear);
+    renderPlanList();
+}
+
+function updatePlanProgress(dayOfYear) {
     const readChapters = readingPlan.filter(p => p.done).reduce((sum, p) => sum + p.chapters.length, 0);
-    const total = 260;
+    const total = BIBLE_BOOKS.reduce((sum, book) => sum + book.chapters, 0);
     const percent = (readChapters / total * 100).toFixed(1);
     document.getElementById('progressFill').style.width = percent + '%';
-    document.getElementById('progressText').textContent = `${readChapters} / ${total} 章（新约）`;
+    document.getElementById('progressText').textContent = `${readChapters} / ${total} 章（全本）`;
     document.getElementById('progressDay').textContent = `第 ${dayOfYear} 天`;
+}
+
+function updateTodayCard(now = new Date()) {
+    if (!todayPlan) return;
+    const label = todayPlan.chapters.map(c => `${c.bookName} ${c.chapter}`).join('、');
+    document.getElementById('dailyDate').textContent = `${now.getMonth() + 1}月${now.getDate()}日 · 第 ${todayPlan.day} 天`;
+    document.getElementById('dailyTitle').textContent = `今日阅读：${label}`;
+    const button = document.getElementById('completeTodayBtn');
+    button.textContent = todayPlan.done ? '✓ 今日已完成' : '标记今日完成';
+    button.classList.toggle('done', todayPlan.done);
+}
+
+function togglePlanDay(day) {
+    const item = readingPlan[day - 1];
+    if (!item) return;
+    item.done = !item.done;
+    const year = new Date().getFullYear();
+    localStorage.setItem(`bible_plan_${year}`, JSON.stringify(readingPlan.filter(p => p.done).map(p => p.day)));
+    updatePlanProgress(todayPlan.day);
+    updateTodayCard();
     renderPlanList();
 }
 
 function renderPlanList() {
     const container = document.getElementById('planList');
     let html = '';
-    readingPlan.forEach((p, idx) => {
-        const dayLabel = p.chapters.length > 0 ? p.chapters.map(c => `${c.bookAbbrev} ${c.chapter}`).join('、') : '🎉 已完成全部新约！';
+    readingPlan.forEach(p => {
+        const dayLabel = p.chapters.map(c => `${c.bookAbbrev} ${c.chapter}`).join('、');
         let statusClass = 'pending', statusText = '⏳ 待读';
-        if (p.isToday) { statusClass = 'today'; statusText = '📌 今日'; } else if (p.done && p.chapters.length > 0) { statusClass = 'done'; statusText = '✅ 已读'; } else if (p.chapters.length === 0) { statusClass = 'done'; statusText = '🎉 完成'; }
-        const onClick = p.chapters.length > 0 ? `onclick="loadChapter('${p.chapters[0].bookId}', ${p.chapters[0].chapter})"` : '';
-        html += `<div class="plan-day" ${onClick}><span class="day-num">第${p.day}天</span><span class="day-reading">📖 ${dayLabel}</span><span class="day-status ${statusClass}">${statusText}</span></div>`;
+        if (p.isToday) { statusClass = 'today'; statusText = '📌 今日'; }
+        if (p.done) { statusClass = 'done'; statusText = '✅ 已读'; }
+        html += `<div class="plan-day ${p.isToday ? 'is-today' : ''}" data-open-day="${p.day}"><span class="day-num">第${p.day}天</span><span class="day-reading">📖 ${dayLabel}</span><span class="day-status ${statusClass}">${statusText}</span><button class="plan-check" data-check-day="${p.day}">${p.done ? '撤销' : '完成'}</button></div>`;
     });
     container.innerHTML = html;
+    container.querySelectorAll('[data-open-day]').forEach(row => row.addEventListener('click', () => {
+        const item = readingPlan[Number(row.dataset.openDay) - 1];
+        if (item?.chapters[0]) loadChapter(item.chapters[0].bookId, item.chapters[0].chapter);
+    }));
+    container.querySelectorAll('[data-check-day]').forEach(button => button.addEventListener('click', event => {
+        event.stopPropagation();
+        togglePlanDay(Number(button.dataset.checkDay));
+    }));
+    setTimeout(() => container.querySelector('.is-today')?.scrollIntoView({ block: 'center' }), 0);
 }
 
 // ============================================================
 // 搜索
 // ============================================================
-function performSearch() {
+function findLocalResults(query) {
+    const results = [];
+    Object.entries(window.BIBLE_DATA || {}).forEach(([bookId, bookData]) => {
+        const book = BIBLE_BOOKS.find(item => item.id === bookId);
+        Object.entries(bookData.chapters || {}).forEach(([chapter, verses]) => {
+            Object.entries(verses).forEach(([verse, text]) => {
+                if ((text.zh || '').includes(query) || (text.en || '').toLowerCase().includes(query.toLowerCase())) {
+                    results.push({ bookId, chapter: Number(chapter), verse: Number(verse), ref: `${book?.name || bookId} ${chapter}:${verse}`, zh: text.zh, en: text.en });
+                }
+            });
+        });
+    });
+    return results.slice(0, 20);
+}
+
+function renderSearchResults(results, query, source = '') {
+    const box = document.getElementById('searchResults');
+    const safeResults = results.filter(item => BIBLE_BOOKS.some(book => book.id === item.bookId));
+    box.classList.add('active');
+    box.innerHTML = `<div class="search-results-header"><span>“${escapeHTML(query)}” 的搜索结果（${safeResults.length}）</span><button class="search-close" aria-label="关闭搜索结果">×</button></div>` +
+        (safeResults.length ? safeResults.map((item, index) => `<div class="result-item" data-result="${index}"><span class="ref">${escapeHTML(item.ref)}</span>${escapeHTML(item.zh || '')}${item.en ? `<span class="en">${escapeHTML(item.en)}</span>` : ''}</div>`).join('') : '<div class="search-hint">没有找到匹配经文，请尝试更短的关键词。</div>') +
+        (source ? `<div class="search-hint">${escapeHTML(source)}</div>` : '');
+    box.querySelector('.search-close').addEventListener('click', () => box.classList.remove('active'));
+    box.querySelectorAll('[data-result]').forEach(el => el.addEventListener('click', () => {
+        const item = safeResults[Number(el.dataset.result)];
+        loadChapter(item.bookId, item.chapter);
+        box.classList.remove('active');
+    }));
+}
+
+async function performSearch() {
     const query = document.getElementById('searchInput').value.trim();
     if (!query) { alert('请输入搜索内容'); return; }
-    document.getElementById('qaInput').value = `请帮我查找圣经中关于"${query}"的经文`;
-    document.getElementById('qaBtn').click();
+    const button = document.getElementById('searchBtn');
+    const localResults = findLocalResults(query);
+    if (localResults.length) {
+        renderSearchResults(localResults, query, '经文库精确匹配');
+        return;
+    }
+    button.disabled = true;
+    button.textContent = '搜索中…';
+    renderSearchResults([], query, '正在检索全本圣经…');
+    try {
+        const typeLabel = document.getElementById('searchType').selectedOptions[0].textContent;
+        const data = await callWorker([
+            { role: 'system', content: '你是圣经经文检索助手。只返回有效JSON，不返回代码围栏、解释、字段说明或其他文字。' },
+            { role: 'user', content: `在全本圣经中按“${typeLabel}”查找“${query}”。返回最多12条最相关结果。严格使用JSON：{"results":[{"bookId":"gen","chapter":1,"verse":1,"ref":"创世记 1:1","zh":"中文经文","en":"English verse"}]}。bookId必须使用标准缩写，如gen、psa、mat、jhn。` }
+        ], { temperature: 0.2, max_tokens: 1800 });
+        const raw = data?.choices?.[0]?.message?.content || '';
+        const match = raw.match(/\{[\s\S]*\}/);
+        const parsed = match ? JSON.parse(match[0]) : { results: [] };
+        renderSearchResults(Array.isArray(parsed.results) ? parsed.results : [], query, 'AI 辅助检索，请以纸质圣经或可靠译本复核');
+    } catch (error) {
+        renderSearchResults([], query, '搜索服务暂时不可用，请稍后重试。');
+    } finally {
+        button.disabled = false;
+        button.textContent = '🔍 搜索';
+    }
 }
 
 // ============================================================
@@ -1127,10 +1285,19 @@ document.addEventListener('DOMContentLoaded', function() {
         this.textContent = panel.classList.contains('open') ? '📋 收起' : '📋 展开';
     });
 
+    document.getElementById('startTodayBtn').addEventListener('click', () => {
+        const first = todayPlan?.chapters?.[0];
+        if (first) loadChapter(first.bookId, first.chapter);
+    });
+    document.getElementById('completeTodayBtn').addEventListener('click', () => {
+        if (todayPlan) togglePlanDay(todayPlan.day);
+    });
+
     // 启动
     renderSidebar();
-    loadChapter('gen', 1);
     initReadingPlan();
+    const firstToday = todayPlan?.chapters?.[0];
+    loadChapter(firstToday?.bookId || 'gen', firstToday?.chapter || 1);
 });
 </script>
 </body>
