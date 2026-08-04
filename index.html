@@ -636,6 +636,25 @@
         .verse-tools.active { display:flex; }
         .verse-tools .tool-ref { font-weight:700; padding:0 8px; margin-right:auto; }
         .verse-tools button { border:1px solid rgba(255,255,255,.24); color:#fff; background:rgba(255,255,255,.1); border-radius:20px; padding:7px 10px; cursor:pointer; }
+        .share-modal { display:none; position:fixed; inset:0; z-index:80; background:rgba(24,20,17,.72); backdrop-filter:blur(7px); padding:20px; align-items:center; justify-content:center; }
+        .share-modal.active { display:flex; }
+        .share-dialog { width:min(920px,100%); max-height:94vh; overflow:auto; background:var(--bg-app); border:1px solid var(--border-color); border-radius:24px; box-shadow:0 28px 80px rgba(0,0,0,.35); padding:20px; }
+        .share-head { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; }
+        .share-head h3 { margin:0; color:var(--text-primary); font-size:21px; }
+        .share-close { border:0; background:transparent; color:var(--text-muted); cursor:pointer; font-size:25px; }
+        .share-layout { display:grid; grid-template-columns:minmax(260px,430px) 1fr; gap:22px; align-items:start; }
+        #shareCanvas { display:block; width:100%; height:auto; border-radius:18px; box-shadow:0 14px 35px rgba(56,40,27,.2); background:#eee; }
+        .share-options { display:flex; flex-direction:column; gap:15px; }
+        .share-options label { color:var(--text-secondary); font-size:13px; font-weight:700; }
+        .theme-options { display:grid; grid-template-columns:repeat(2,1fr); gap:9px; }
+        .card-theme { border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-secondary); border-radius:13px; padding:12px 8px; cursor:pointer; }
+        .card-theme.active { border-color:var(--accent); color:var(--accent); box-shadow:0 0 0 2px rgba(183,140,95,.13); }
+        .share-switch { display:flex; align-items:center; gap:8px; color:var(--text-secondary); font-size:14px; }
+        .share-switch input { accent-color:var(--accent); }
+        .share-actions { display:grid; gap:9px; margin-top:5px; }
+        .share-actions button { border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary); border-radius:13px; padding:12px; cursor:pointer; }
+        .share-actions .primary { color:#fff; background:var(--accent); border-color:var(--accent); }
+        .share-tip { color:var(--text-muted); font-size:12px; line-height:1.7; }
         .continue-btn { display:none; }
         .continue-btn.available { display:inline-block; }
         @media (max-width: 860px) {
@@ -648,6 +667,9 @@
             .chapter-nav button { padding:7px 9px; }
             .chapter-nav .chapter-spacer { display:none; }
             .verse-tools .tool-ref { width:100%; }
+            .share-dialog { padding:15px; }
+            .share-layout { grid-template-columns:1fr; }
+            #shareCanvas { max-width:360px; margin:auto; }
         }
     </style>
 </head>
@@ -761,7 +783,32 @@
     <button data-verse-action="highlight">高亮</button>
     <button data-verse-action="note">笔记</button>
     <button data-verse-action="speak">朗读</button>
+    <button data-verse-action="share">生成分享卡片</button>
     <button data-verse-action="close">关闭</button>
+</div>
+
+<div class="share-modal" id="shareModal" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
+    <div class="share-dialog">
+        <div class="share-head"><h3 id="shareTitle">经文分享卡片</h3><button class="share-close" id="shareCloseBtn" aria-label="关闭">×</button></div>
+        <div class="share-layout">
+            <canvas id="shareCanvas" width="1080" height="1350"></canvas>
+            <div class="share-options">
+                <label>选择卡片风格</label>
+                <div class="theme-options">
+                    <button class="card-theme active" data-card-theme="dawn">🌤 晨光</button>
+                    <button class="card-theme" data-card-theme="mist">🌿 山岚</button>
+                    <button class="card-theme" data-card-theme="night">🌙 静夜</button>
+                    <button class="card-theme" data-card-theme="paper">📜 宣纸</button>
+                </div>
+                <label class="share-switch"><input type="checkbox" id="shareEnglishToggle"> 同时显示英文经文</label>
+                <div class="share-actions">
+                    <button class="primary" id="downloadCardBtn">下载高清图片</button>
+                    <button id="nativeShareBtn">分享给朋友</button>
+                </div>
+                <p class="share-tip">图片会在你的浏览器中生成，不会上传经文、笔记或阅读记录。适合保存到相册后分享到微信、朋友圈或其他平台。</p>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="popup-overlay" id="popupOverlay"></div>
@@ -861,6 +908,8 @@ let completedChapters = new Set();
 let speechQueue = [];
 let speechIndex = 0;
 let deferredInstallPrompt = null;
+let shareVerse = null;
+let shareCardTheme = 'dawn';
 
 function readStoredJSON(key, fallback) {
     try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); }
@@ -950,6 +999,121 @@ async function handleVerseAction(action) {
         if (value !== null) { value.trim() ? notes[key] = value.trim() : delete notes[key]; writeStoredJSON('bible_verse_notes_v1', notes); }
     } else if (action === 'speak') {
         speakVerses([selectedVerse]);
+    } else if (action === 'share') {
+        openShareCard(selectedVerse);
+    }
+}
+
+const SHARE_THEMES = {
+    dawn: { top:'#f8dfc1', bottom:'#f7f0e8', ink:'#49372d', accent:'#b56f51', soft:'rgba(255,255,255,.55)' },
+    mist: { top:'#ceddd2', bottom:'#f2eee3', ink:'#31473b', accent:'#658270', soft:'rgba(255,255,255,.48)' },
+    night: { top:'#17243b', bottom:'#473953', ink:'#f8f0df', accent:'#ddbd82', soft:'rgba(255,255,255,.09)' },
+    paper: { top:'#ead9b8', bottom:'#f6eddc', ink:'#4e3d2f', accent:'#9d5c46', soft:'rgba(255,250,238,.48)' }
+};
+
+function canvasRoundRect(ctx, x, y, width, height, radius) {
+    ctx.beginPath();
+    ctx.roundRect(x, y, width, height, radius);
+}
+
+function drawWrappedText(ctx, text, x, y, maxWidth, lineHeight, maxLines, mode = 'chars') {
+    const units = mode === 'words' ? String(text).split(/\s+/) : [...String(text)];
+    const spacer = mode === 'words' ? ' ' : '';
+    const lines = [];
+    let line = '';
+    units.forEach(unit => {
+        const test = line ? line + spacer + unit : unit;
+        if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = unit; }
+        else line = test;
+    });
+    if (line) lines.push(line);
+    const visible = lines.slice(0, maxLines);
+    if (lines.length > maxLines) visible[maxLines - 1] = visible[maxLines - 1].replace(/[，。；、,.!?\s]*$/, '') + '…';
+    visible.forEach((value, index) => ctx.fillText(value, x, y + index * lineHeight));
+    return y + visible.length * lineHeight;
+}
+
+function drawShareDecorations(ctx, theme) {
+    if (shareCardTheme === 'dawn') {
+        ctx.fillStyle = 'rgba(255,255,255,.24)'; ctx.beginPath(); ctx.arc(880, 205, 190, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(181,111,81,.12)'; ctx.beginPath(); ctx.arc(140, 1180, 260, 0, Math.PI * 2); ctx.fill();
+    } else if (shareCardTheme === 'mist') {
+        ctx.strokeStyle = 'rgba(69,101,82,.2)'; ctx.lineWidth = 8;
+        for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(-30, 1080 + i * 45); ctx.bezierCurveTo(250, 930, 450, 1240, 1110, 960 + i * 50); ctx.stroke(); }
+    } else if (shareCardTheme === 'night') {
+        ctx.fillStyle = theme.accent; ctx.beginPath(); ctx.arc(868, 190, 72, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = theme.top; ctx.beginPath(); ctx.arc(900, 168, 72, 0, Math.PI * 2); ctx.fill();
+        for (let i = 0; i < 22; i++) { ctx.globalAlpha = .35 + (i % 3) * .18; ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc((i * 193) % 1030 + 20, (i * 137) % 1200 + 30, i % 3 + 2, 0, Math.PI * 2); ctx.fill(); }
+        ctx.globalAlpha = 1;
+    } else {
+        ctx.strokeStyle = 'rgba(103,70,42,.07)'; ctx.lineWidth = 2;
+        for (let y = 20; y < 1350; y += 18) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1080, y + 8); ctx.stroke(); }
+        ctx.fillStyle = 'rgba(157,92,70,.12)'; ctx.fillRect(82, 84, 14, 1182);
+    }
+}
+
+function renderShareCard() {
+    if (!shareVerse) return;
+    const canvas = document.getElementById('shareCanvas');
+    const ctx = canvas.getContext('2d');
+    const theme = SHARE_THEMES[shareCardTheme];
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, theme.top); gradient.addColorStop(1, theme.bottom);
+    ctx.fillStyle = gradient; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    drawShareDecorations(ctx, theme);
+
+    ctx.fillStyle = theme.soft; canvasRoundRect(ctx, 105, 160, 870, 1025, 42); ctx.fill();
+    ctx.strokeStyle = shareCardTheme === 'night' ? 'rgba(255,255,255,.16)' : 'rgba(83,57,39,.10)'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.fillStyle = theme.accent; ctx.font = '700 34px "Microsoft YaHei", sans-serif'; ctx.textAlign = 'center'; ctx.letterSpacing = '8px'; ctx.fillText('今日经文', 540, 270); ctx.letterSpacing = '0px';
+    ctx.fillRect(470, 310, 140, 4);
+
+    const zhLength = [...shareVerse.zh].length;
+    const zhSize = zhLength > 105 ? 43 : zhLength > 65 ? 49 : 57;
+    ctx.fillStyle = theme.ink; ctx.font = `500 ${zhSize}px "STKaiti", "KaiTi", "Microsoft YaHei", serif`; ctx.textAlign = 'left';
+    let y = drawWrappedText(ctx, `“${shareVerse.zh}”`, 175, 425, 730, Math.round(zhSize * 1.68), 8);
+
+    if (document.getElementById('shareEnglishToggle').checked && shareVerse.en) {
+        y += 26; ctx.globalAlpha = .72; ctx.font = 'italic 28px Georgia, serif';
+        y = drawWrappedText(ctx, shareVerse.en, 175, y, 730, 45, 5, 'words'); ctx.globalAlpha = 1;
+    }
+    const book = BIBLE_BOOKS.find(b => b.id === shareVerse.bookId);
+    ctx.fillStyle = theme.accent; ctx.font = '700 38px "Microsoft YaHei", sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText(`— ${book.name} ${shareVerse.chapter}:${shareVerse.verse}`, 900, Math.min(1070, Math.max(y + 90, 925)));
+    ctx.fillStyle = theme.ink; ctx.globalAlpha = .58; ctx.font = '26px "Microsoft YaHei", sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('溪水旁 · 一年读经', 540, 1250); ctx.globalAlpha = 1;
+}
+
+function openShareCard(verse) {
+    shareVerse = { ...verse, bookId:currentBookId, chapter:currentChapter };
+    document.getElementById('shareModal').classList.add('active');
+    renderShareCard();
+}
+
+function closeShareCard() { document.getElementById('shareModal').classList.remove('active'); }
+
+function getShareCardBlob() {
+    return new Promise(resolve => document.getElementById('shareCanvas').toBlob(resolve, 'image/png', 1));
+}
+
+async function downloadShareCard() {
+    const blob = await getShareCardBlob();
+    if (!blob) return;
+    const book = BIBLE_BOOKS.find(b => b.id === shareVerse.bookId);
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob); link.download = `${book.name}-${shareVerse.chapter}-${shareVerse.verse}-经文卡片.png`; link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+}
+
+async function nativeShareCard() {
+    const blob = await getShareCardBlob();
+    if (!blob) return;
+    const book = BIBLE_BOOKS.find(b => b.id === shareVerse.bookId);
+    const file = new File([blob], '经文分享卡片.png', { type:'image/png' });
+    if (navigator.canShare?.({ files:[file] })) {
+        try { await navigator.share({ title:`${book.name} ${shareVerse.chapter}:${shareVerse.verse}`, files:[file] }); } catch { /* user cancelled */ }
+    } else {
+        await downloadShareCard();
+        alert('当前浏览器不支持直接分享，图片已下载，可以从相册发送给朋友。');
     }
 }
 
@@ -1539,6 +1703,17 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('speakChapterBtn').addEventListener('click', () => speakVerses(currentVerses));
     document.getElementById('stopSpeechBtn').addEventListener('click', stopSpeech);
     document.getElementById('verseTools').querySelectorAll('[data-verse-action]').forEach(button => button.addEventListener('click', () => handleVerseAction(button.dataset.verseAction)));
+    document.getElementById('shareCloseBtn').addEventListener('click', closeShareCard);
+    document.getElementById('shareModal').addEventListener('click', event => { if (event.target.id === 'shareModal') closeShareCard(); });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape') closeShareCard(); });
+    document.querySelectorAll('[data-card-theme]').forEach(button => button.addEventListener('click', () => {
+        shareCardTheme = button.dataset.cardTheme;
+        document.querySelectorAll('[data-card-theme]').forEach(item => item.classList.toggle('active', item === button));
+        renderShareCard();
+    }));
+    document.getElementById('shareEnglishToggle').addEventListener('change', renderShareCard);
+    document.getElementById('downloadCardBtn').addEventListener('click', downloadShareCard);
+    document.getElementById('nativeShareBtn').addEventListener('click', nativeShareCard);
     updateContinueButton();
     setupPWA();
 
