@@ -857,31 +857,89 @@ const WORKER_URL = 'https://bible-proxy.liwanmeng22.workers.dev';
 // 调用 Worker 代理
 // ============================================================
 async function callWorker(messages, options = {}) {
-    const response = await fetch(WORKER_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            messages: messages,
-            model: options.model || 'deepseek-chat',
-            temperature: options.temperature || 0.7,
-            max_tokens: options.max_tokens || 2000,
-        }),
-    });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Worker 请求失败: ${response.status} ${errorText}`);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), options.timeout || 25000);
+    try {
+        const response = await fetch(WORKER_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
+            body: JSON.stringify({
+                messages,
+                model: options.model || 'deepseek-chat',
+                temperature: options.temperature ?? 0.7,
+                max_tokens: options.max_tokens || 2000,
+            }),
+        });
+        if (!response.ok) throw new Error(`服务返回 ${response.status}`);
+        return await response.json();
+    } catch (error) {
+        if (error.name === 'AbortError') throw new Error('请求超时');
+        throw error;
+    } finally {
+        clearTimeout(timer);
     }
+}
 
-    return await response.json();
+function parseAIJSON(data) {
+    const content = data?.choices?.[0]?.message?.content || '';
+    const match = content.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('返回格式异常');
+    return JSON.parse(match[0]);
+}
+
+function readCache(key) {
+    try {
+        const cached = JSON.parse(localStorage.getItem(key) || 'null');
+        return cached && Date.now() - cached.savedAt < 30 * 24 * 60 * 60 * 1000 ? cached.data : null;
+    } catch { return null; }
+}
+
+function writeCache(key, data) {
+    try { localStorage.setItem(key, JSON.stringify({ savedAt: Date.now(), data })); } catch { /* storage full: reading still works */ }
+}
+
+function refreshCurrentInsights() {
+    const book = BIBLE_BOOKS.find(item => item.id === currentBookId);
+    if (!book) return;
+    ['historyCard', 'storyCard', 'futureCard', 'thoughtCard'].forEach(id => document.querySelector(`#${id} p`).textContent = '正在刷新章节解读…');
+    loadInsights(book, currentChapter, chapterRequestId, true);
+}
+
+let chapterRequestId = 0;
+
+async function loadInsights(book, chapter, requestId, force = false) {
+    const cacheKey = `bible_insight_v2_${book.id}_${chapter}`;
+    const cached = force ? null : readCache(cacheKey);
+    const render = result => {
+        if (requestId !== chapterRequestId) return;
+        document.querySelector('#historyCard p').textContent = result.history || '暂无内容';
+        document.querySelector('#storyCard p').textContent = result.story || '暂无内容';
+        document.querySelector('#futureCard p').textContent = result.future || '暂无内容';
+        document.querySelector('#thoughtCard p').textContent = result.thought || '暂无内容';
+    };
+    if (cached) { render(cached); return; }
+    try {
+        const data = await callWorker([
+            { role: 'system', content: '你是圣经文献与古代近东历史研究助手。只输出有效JSON，不输出代码围栏。所有内容使用中文。' },
+            { role: 'user', content: `简要分析《${book.name}》第${chapter}章。严格返回JSON：{"history":"历史背景，120字内","story":"文学关联，120字内","future":"文本脉络与后文关联，100字内","thought":"2个阅读思考点和1个延伸问题，180字内"}` }
+        ], { temperature: 0.4, max_tokens: 900, timeout: 20000 });
+        const result = parseAIJSON(data);
+        writeCache(cacheKey, result);
+        render(result);
+    } catch (error) {
+        if (requestId !== chapterRequestId) return;
+        ['historyCard', 'storyCard', 'futureCard', 'thoughtCard'].forEach(id => {
+            document.querySelector(`#${id} p`).textContent = '解读暂时不可用，可稍后刷新';
+        });
+    }
 }
 
 // ============================================================
 // 加载章节
 // ============================================================
 async function loadChapter(bookId, chapter) {
+    const requestId = ++chapterRequestId;
     currentBookId = bookId;
     currentChapter = chapter;
     const book = BIBLE_BOOKS.find(b => b.id === bookId);
@@ -891,91 +949,33 @@ async function loadChapter(bookId, chapter) {
     renderSidebar();
 
     const display = document.getElementById('verseDisplay');
-    display.innerHTML = `
-        <div class="loading-container">
-            <div class="sheep">🐑</div>
-            <div class="loading-text">AI 正在生成经文<span class="loading-dots"></span></div>
-        </div>
-    `;
-    document.querySelector('#historyCard p').textContent = 'AI 正在生成...';
-    document.querySelector('#storyCard p').textContent = 'AI 正在生成...';
-    document.querySelector('#futureCard p').textContent = 'AI 正在生成...';
-    document.querySelector('#thoughtCard p').textContent = 'AI 正在生成...';
-
-    const localVerses = getLocalChapter(bookId, chapter);
-    if (localVerses) {
-        renderVerses(localVerses, display);
-        updateDailyVerse(book, chapter, localVerses);
-    }
-
-    try {
-        const prompt = `
-            请提供圣经《${book.name}》第${chapter}章的中英文对照经文（中文和合本 + 英文WEB译本）。
-            除逐节英文译文外，所有标题、说明和分析必须使用中文；不要输出Markdown代码围栏、JSON字段说明或界面代码。
-            同时提供：
-            1. 历史背景（150字左右）
-            2. 文学关联（150字左右）
-            3. 深度阅读思考（200字左右，包含2-3个🔹标记的思考点和2个💭标记的延伸问题）
-            
-            请以JSON格式输出：
-            {
-                "verses": [
-                    {"verse": 1, "zh": "中文经文", "en": "英文经文"},
-                    ...
-                ],
-                "history": "历史背景",
-                "story": "文学关联",
-                "thought": "深度阅读思考（包含🔹和💭）"
-            }
-            
-            注意：只输出JSON，不要有其他内容。经文要完整，逐节输出。
-        `;
-
-        const data = await callWorker([
-            { role: 'system', content: '你是一位圣经文献学与古代近东历史的学术研究者，回答需保持客观、中立、学术化，不涉及传教。' },
-            { role: 'user', content: prompt }
-        ]);
-
-        // 解析 JSON
-        let result;
+    ['historyCard', 'storyCard', 'futureCard', 'thoughtCard'].forEach(id => document.querySelector(`#${id} p`).textContent = '章节解读加载中…');
+    const cacheKey = `bible_chapter_v2_${bookId}_${chapter}`;
+    let verses = getLocalChapter(bookId, chapter) || readCache(cacheKey);
+    if (verses?.length) {
+        renderVerses(verses, display);
+        updateDailyVerse(book, chapter, verses);
+        loadInsights(book, chapter, requestId);
+    } else {
+        display.innerHTML = '<div class="loading-container"><div class="sheep">🐑</div><div class="loading-text">首次加载本章经文，之后将自动缓存<span class="loading-dots"></span></div></div>';
         try {
-            const content = data.choices[0].message.content;
-            const jsonMatch = content.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-                result = JSON.parse(jsonMatch[0]);
-            } else {
-                result = JSON.parse(content);
+            const data = await callWorker([
+                { role: 'system', content: '你是圣经文本数据助手。只输出有效JSON，不输出代码围栏、解释或字段说明。' },
+                { role: 'user', content: `提供《${book.name}》第${chapter}章完整逐节中英文对照（中文和合本、英文WEB）。严格返回JSON：{"verses":[{"verse":1,"zh":"中文","en":"English"}]}` }
+            ], { temperature: 0.1, max_tokens: 6000, timeout: 35000 });
+            const result = parseAIJSON(data);
+            if (!Array.isArray(result.verses) || !result.verses.length) throw new Error('没有经文数据');
+            verses = result.verses;
+            writeCache(cacheKey, verses);
+            if (requestId === chapterRequestId) {
+                renderVerses(verses, display);
+                updateDailyVerse(book, chapter, verses);
+                loadInsights(book, chapter, requestId);
             }
-        } catch (e) {
-            console.error('JSON解析失败:', e);
-            if (!localVerses) display.innerHTML = '<p style="color:var(--text-muted);padding:20px;">返回内容格式异常，未显示其中的代码片段。请点击“刷新内容”重试。</p>';
-            return;
+        } catch (error) {
+            if (requestId === chapterRequestId) display.innerHTML = `<div style="padding:28px;text-align:center;color:var(--text-muted);"><p>本章首次加载失败：${escapeHTML(error.message)}</p><button class="refresh-btn" style="float:none;margin-top:12px;" onclick="loadChapter('${bookId}', ${chapter})">重新加载</button></div>`;
         }
-
-        // 渲染经文
-        if (result.verses && result.verses.length > 0) {
-            renderVerses(result.verses, display);
-            updateDailyVerse(book, chapter, result.verses);
-        } else {
-            display.innerHTML = `<p style="color:var(--text-muted);">暂无经文数据</p>`;
-        }
-
-        if (result.history) document.querySelector('#historyCard p').textContent = result.history;
-        if (result.story) document.querySelector('#storyCard p').textContent = result.story;
-        if (result.thought) {
-            document.querySelector('#thoughtCard p').textContent = result.thought;
-            document.querySelector('#futureCard p').textContent = result.thought.substring(0, 100) + '...';
-        }
-
-    } catch (error) {
-        console.error('加载失败:', error);
-        if (!localVerses) display.innerHTML = `<p style="color:#c0392b;padding:20px;">⚠️ 经文暂时无法加载，请稍后重试。</p>`;
-        document.querySelector('#historyCard p').textContent = '加载失败，请重试';
-        document.querySelector('#storyCard p').textContent = '加载失败，请重试';
-        document.querySelector('#futureCard p').textContent = '加载失败，请重试';
-        document.querySelector('#thoughtCard p').textContent = '加载失败，请重试';
     }
-
     loadNote(bookId, chapter);
 }
 
@@ -1276,7 +1276,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('noteInput').addEventListener('blur', () => saveNote(currentBookId, currentChapter));
 
     // 刷新
-    document.getElementById('refreshInsightBtn').addEventListener('click', () => loadChapter(currentBookId, currentChapter));
+    document.getElementById('refreshInsightBtn').addEventListener('click', refreshCurrentInsights);
 
     // 计划
     document.getElementById('planToggleBtn').addEventListener('click', function() {
