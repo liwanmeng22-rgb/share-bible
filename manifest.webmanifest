@@ -1,0 +1,14 @@
+{
+  "name": "共享圣经 · 一年读经",
+  "short_name": "共享圣经",
+  "description": "支持全年读经计划、经文搜索、笔记与离线阅读的圣经阅读工具",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f1e8",
+  "theme_color": "#76583d",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

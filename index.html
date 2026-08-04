@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#76583d">
+    <link rel="manifest" href="manifest.webmanifest">
     <title>📖 溪水旁 · 智能读经</title>
     <style>
         :root {
@@ -619,12 +621,33 @@
         .verse-text .verse-block:hover { background: var(--bg-card); }
         .reading-plan-panel .plan-day.is-today { background: rgba(183,140,95,.13); border: 1px solid rgba(183,140,95,.28); }
         .plan-check { border: 1px solid var(--border-color); background: var(--bg-app); color: var(--text-secondary); border-radius: 20px; padding: 4px 9px; cursor: pointer; }
+        .utility-btn { border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-secondary); border-radius: 30px; padding: 6px 11px; cursor: pointer; font-size: 12px; }
+        .chapter-nav { display:flex; align-items:center; gap:8px; margin: 8px 0 16px; padding: 9px 10px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:14px; position:sticky; top:0; z-index:6; }
+        .chapter-nav button { border:0; background:var(--bg-app); color:var(--text-secondary); border-radius:22px; padding:7px 12px; cursor:pointer; white-space:nowrap; }
+        .chapter-nav button:hover { color:var(--accent); }
+        .chapter-nav .chapter-spacer { flex:1; }
+        .chapter-nav .chapter-done.done { background:#416b4d; color:#fff; }
+        .verse-block { cursor:pointer; position:relative; }
+        .verse-block.selected { background:rgba(183,140,95,.13) !important; outline:1px solid rgba(183,140,95,.35); }
+        .verse-block.user-highlight { background:rgba(255,216,92,.24); }
+        .verse-block.favorite::after { content:'★'; position:absolute; right:8px; top:7px; color:#d39a28; font-size:13px; }
+        .verse-block.speaking { background:rgba(86,142,105,.18) !important; outline:1px solid rgba(86,142,105,.35); }
+        .verse-tools { display:none; position:fixed; left:50%; bottom:18px; transform:translateX(-50%); z-index:40; width:min(680px,calc(100% - 24px)); padding:10px; border-radius:18px; background:rgba(48,42,37,.96); color:#fff; box-shadow:0 16px 40px rgba(0,0,0,.25); align-items:center; gap:7px; flex-wrap:wrap; }
+        .verse-tools.active { display:flex; }
+        .verse-tools .tool-ref { font-weight:700; padding:0 8px; margin-right:auto; }
+        .verse-tools button { border:1px solid rgba(255,255,255,.24); color:#fff; background:rgba(255,255,255,.1); border-radius:20px; padding:7px 10px; cursor:pointer; }
+        .continue-btn { display:none; }
+        .continue-btn.available { display:inline-block; }
         @media (max-width: 860px) {
             body { padding: 0; }
             .app { border-radius: 0; min-height: 100vh; }
             .daily-card { margin: 12px 14px 4px; padding: 18px; grid-template-columns: 1fr; }
             .daily-actions { justify-content: flex-start; }
             .daily-card h2 { font-size: 19px; }
+            .chapter-nav { overflow-x:auto; position:static; }
+            .chapter-nav button { padding:7px 9px; }
+            .chapter-nav .chapter-spacer { display:none; }
+            .verse-tools .tool-ref { width:100%; }
         }
     </style>
 </head>
@@ -648,6 +671,8 @@
                 <option value="gray">高级灰</option>
                 <option value="dark">暗夜</option>
             </select>
+            <button class="utility-btn" id="installBtn" hidden>安装应用</button>
+            <button class="utility-btn" id="offlineBtn">离线缓存</button>
         </div>
     </div>
 
@@ -674,6 +699,7 @@
         </div>
         <div class="daily-actions">
             <button class="primary" id="startTodayBtn">开始今日阅读</button>
+            <button class="continue-btn" id="continueBtn">继续上次阅读</button>
             <button id="completeTodayBtn">标记今日完成</button>
         </div>
     </section>
@@ -681,6 +707,14 @@
         <div class="sidebar" id="sidebar"></div>
         <div class="content" id="contentArea">
             <div class="breadcrumb" id="breadcrumb">📂 旧约 / <span>创世记</span> 第 1 章</div>
+            <div class="chapter-nav">
+                <button id="prevChapterBtn">← 上一章</button>
+                <button id="nextChapterBtn">下一章 →</button>
+                <span class="chapter-spacer"></span>
+                <button id="speakChapterBtn">🔊 朗读本章</button>
+                <button id="stopSpeechBtn" hidden>停止朗读</button>
+                <button class="chapter-done" id="chapterDoneBtn">○ 标记本章已读</button>
+            </div>
             <div class="search-results" id="searchResults"></div>
             <div class="verse-text" id="verseDisplay">
                 <div class="loading-container"><div class="sheep">🐑</div><div class="loading-text">AI 正在生成经文<span class="loading-dots"></span></div></div>
@@ -718,6 +752,16 @@
         <strong>📌 本站声明：</strong> 本网站所有内容仅供 <strong>学术研究、文学阅读及历史文化学习</strong> 之用。
         <span style="display:block;margin-top:4px;font-size:10px;">📚 经文：公有领域《新标点和合本》与 World English Bible · 🤖 解读：DeepSeek</span>
     </div>
+</div>
+
+<div class="verse-tools" id="verseTools">
+    <span class="tool-ref" id="selectedVerseRef">选择经节</span>
+    <button data-verse-action="copy">复制</button>
+    <button data-verse-action="favorite">收藏</button>
+    <button data-verse-action="highlight">高亮</button>
+    <button data-verse-action="note">笔记</button>
+    <button data-verse-action="speak">朗读</button>
+    <button data-verse-action="close">关闭</button>
 </div>
 
 <div class="popup-overlay" id="popupOverlay"></div>
@@ -811,6 +855,24 @@ const NT_BOOKS = BIBLE_BOOKS.filter(b =>
 let currentBookId = 'gen';
 let currentChapter = 1;
 let todayPlan = null;
+let currentVerses = [];
+let selectedVerse = null;
+let completedChapters = new Set();
+let speechQueue = [];
+let speechIndex = 0;
+let deferredInstallPrompt = null;
+
+function readStoredJSON(key, fallback) {
+    try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); }
+    catch { return fallback; }
+}
+
+function writeStoredJSON(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage may be full */ }
+}
+
+function chapterKey(bookId, chapter) { return `${bookId}.${chapter}`; }
+function verseKey(bookId, chapter, verse) { return `${bookId}.${chapter}.${verse}`; }
 
 function escapeHTML(value) {
     return String(value ?? '').replace(/[&<>'"]/g, char => ({
@@ -835,7 +897,60 @@ async function getLocalChapter(bookId, chapter) {
 }
 
 function renderVerses(verses, display) {
-    display.innerHTML = verses.map(v => `<div class="verse-block"><span class="v">${escapeHTML(v.verse)}</span><span class="zh">${escapeHTML(v.zh)}</span>${v.en ? `<span class="en">${escapeHTML(v.en)}</span>` : ''}</div>`).join('');
+    currentVerses = verses;
+    const favorites = new Set(readStoredJSON('bible_favorites_v1', []));
+    const highlights = new Set(readStoredJSON('bible_highlights_v1', []));
+    display.innerHTML = verses.map(v => {
+        const key = verseKey(currentBookId, currentChapter, v.verse);
+        const classes = ['verse-block', favorites.has(key) ? 'favorite' : '', highlights.has(key) ? 'user-highlight' : ''].filter(Boolean).join(' ');
+        return `<div class="${classes}" data-verse="${escapeHTML(v.verse)}" tabindex="0"><span class="v">${escapeHTML(v.verse)}</span><span class="zh">${escapeHTML(v.zh)}</span>${v.en ? `<span class="en">${escapeHTML(v.en)}</span>` : ''}</div>`;
+    }).join('');
+    display.querySelectorAll('[data-verse]').forEach(block => {
+        const select = () => selectVerse(block.dataset.verse);
+        block.addEventListener('click', select);
+        block.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); select(); } });
+    });
+}
+
+function selectVerse(verseNumber) {
+    selectedVerse = currentVerses.find(v => String(v.verse) === String(verseNumber)) || null;
+    document.querySelectorAll('.verse-block.selected').forEach(el => el.classList.remove('selected'));
+    const block = [...document.querySelectorAll('.verse-block')].find(el => el.dataset.verse === String(verseNumber));
+    block?.classList.add('selected');
+    const book = BIBLE_BOOKS.find(b => b.id === currentBookId);
+    document.getElementById('selectedVerseRef').textContent = selectedVerse ? `${book.name} ${currentChapter}:${selectedVerse.verse}` : '选择经节';
+    document.getElementById('verseTools').classList.toggle('active', Boolean(selectedVerse));
+}
+
+function closeVerseTools() {
+    selectedVerse = null;
+    document.querySelectorAll('.verse-block.selected').forEach(el => el.classList.remove('selected'));
+    document.getElementById('verseTools').classList.remove('active');
+}
+
+async function handleVerseAction(action) {
+    if (action === 'close') { closeVerseTools(); return; }
+    if (!selectedVerse) return;
+    const key = verseKey(currentBookId, currentChapter, selectedVerse.verse);
+    const block = [...document.querySelectorAll('.verse-block')].find(el => el.dataset.verse === String(selectedVerse.verse));
+    const book = BIBLE_BOOKS.find(b => b.id === currentBookId);
+    if (action === 'copy') {
+        const text = `${selectedVerse.zh}${selectedVerse.en ? `\n${selectedVerse.en}` : ''}\n— ${book.name} ${currentChapter}:${selectedVerse.verse}`;
+        try { await navigator.clipboard.writeText(text); document.getElementById('selectedVerseRef').textContent = '已复制经文'; }
+        catch { window.prompt('复制下面的经文', text); }
+    } else if (action === 'favorite' || action === 'highlight') {
+        const storageKey = action === 'favorite' ? 'bible_favorites_v1' : 'bible_highlights_v1';
+        const items = new Set(readStoredJSON(storageKey, []));
+        items.has(key) ? items.delete(key) : items.add(key);
+        writeStoredJSON(storageKey, [...items]);
+        block?.classList.toggle(action === 'favorite' ? 'favorite' : 'user-highlight', items.has(key));
+    } else if (action === 'note') {
+        const notes = readStoredJSON('bible_verse_notes_v1', {});
+        const value = window.prompt(`为 ${book.name} ${currentChapter}:${selectedVerse.verse} 添加笔记`, notes[key] || '');
+        if (value !== null) { value.trim() ? notes[key] = value.trim() : delete notes[key]; writeStoredJSON('bible_verse_notes_v1', notes); }
+    } else if (action === 'speak') {
+        speakVerses([selectedVerse]);
+    }
 }
 
 function updateDailyVerse(book, chapter, verses) {
@@ -931,8 +1046,74 @@ async function loadInsights(book, chapter, requestId, force = false) {
 // ============================================================
 // 加载章节
 // ============================================================
-async function loadChapter(bookId, chapter) {
+function stopSpeech() {
+    speechQueue = [];
+    speechIndex = 0;
+    window.speechSynthesis?.cancel();
+    document.querySelectorAll('.verse-block.speaking').forEach(el => el.classList.remove('speaking'));
+    document.getElementById('stopSpeechBtn').hidden = true;
+    document.getElementById('speakChapterBtn').hidden = false;
+}
+
+function speakVerses(verses) {
+    if (!('speechSynthesis' in window) || !verses?.length) { alert('当前浏览器不支持朗读功能'); return; }
+    stopSpeech();
+    speechQueue = [...verses];
+    document.getElementById('stopSpeechBtn').hidden = false;
+    document.getElementById('speakChapterBtn').hidden = true;
+    const next = () => {
+        document.querySelectorAll('.verse-block.speaking').forEach(el => el.classList.remove('speaking'));
+        const verse = speechQueue[speechIndex++];
+        if (!verse) { stopSpeech(); return; }
+        const block = [...document.querySelectorAll('.verse-block')].find(el => el.dataset.verse === String(verse.verse));
+        block?.classList.add('speaking');
+        block?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const utterance = new SpeechSynthesisUtterance(verse.zh);
+        utterance.lang = 'zh-CN';
+        utterance.rate = 0.9;
+        utterance.onend = next;
+        utterance.onerror = next;
+        window.speechSynthesis.speak(utterance);
+    };
+    next();
+}
+
+function getAdjacentChapter(offset) {
+    const bookIndex = BIBLE_BOOKS.findIndex(b => b.id === currentBookId);
+    if (offset < 0) {
+        if (currentChapter > 1) return { bookId: currentBookId, chapter: currentChapter - 1 };
+        if (bookIndex > 0) return { bookId: BIBLE_BOOKS[bookIndex - 1].id, chapter: BIBLE_BOOKS[bookIndex - 1].chapters };
+    } else {
+        if (currentChapter < BIBLE_BOOKS[bookIndex].chapters) return { bookId: currentBookId, chapter: currentChapter + 1 };
+        if (bookIndex < BIBLE_BOOKS.length - 1) return { bookId: BIBLE_BOOKS[bookIndex + 1].id, chapter: 1 };
+    }
+    return null;
+}
+
+function updateChapterControls() {
+    document.getElementById('prevChapterBtn').disabled = !getAdjacentChapter(-1);
+    document.getElementById('nextChapterBtn').disabled = !getAdjacentChapter(1);
+    const done = completedChapters.has(chapterKey(currentBookId, currentChapter));
+    const button = document.getElementById('chapterDoneBtn');
+    button.classList.toggle('done', done);
+    button.textContent = done ? '✓ 本章已读' : '○ 标记本章已读';
+}
+
+function toggleCurrentChapterDone() {
+    const key = chapterKey(currentBookId, currentChapter);
+    completedChapters.has(key) ? completedChapters.delete(key) : completedChapters.add(key);
+    persistChapterProgress();
+}
+
+function openAdjacentChapter(offset) {
+    const target = getAdjacentChapter(offset);
+    if (target) loadChapter(target.bookId, target.chapter);
+}
+
+async function loadChapter(bookId, chapter, targetVerse = null) {
     const requestId = ++chapterRequestId;
+    stopSpeech();
+    closeVerseTools();
     currentBookId = bookId;
     currentChapter = chapter;
     const book = BIBLE_BOOKS.find(b => b.id === bookId);
@@ -950,6 +1131,11 @@ async function loadChapter(bookId, chapter) {
         if (requestId !== chapterRequestId) return;
         renderVerses(verses, display);
         updateDailyVerse(book, chapter, verses);
+        writeStoredJSON('bible_last_position_v1', { bookId, chapter });
+        updateContinueButton();
+        updateChapterControls();
+        history.replaceState(null, '', `${location.pathname}?ref=${bookId}.${chapter}${targetVerse ? `.${targetVerse}` : ''}`);
+        if (targetVerse) setTimeout(() => { selectVerse(targetVerse); document.querySelector('.verse-block.selected')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 0);
         loadInsights(book, chapter, requestId);
     } catch (error) {
         if (requestId === chapterRequestId) display.innerHTML = `<div style="padding:28px;text-align:center;color:var(--text-muted);"><p>${escapeHTML(error.message)}</p><button class="refresh-btn" style="float:none;margin-top:12px;" onclick="loadChapter('${bookId}', ${chapter})">重新读取</button></div>`;
@@ -1081,10 +1267,13 @@ function initReadingPlan() {
     readingPlan = generateReadingPlan();
     const now = new Date();
     const start = new Date(now.getFullYear(), 0, 1);
-    const dayOfYear = Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1;
-    const completed = new Set(JSON.parse(localStorage.getItem(`bible_plan_${now.getFullYear()}`) || '[]'));
+    // 闰年的第 366 天沿用全年计划最后一天，保证每天都有可读内容。
+    const dayOfYear = Math.min(365, Math.floor((now - start) / (1000 * 60 * 60 * 24)) + 1);
+    completedChapters = new Set(readStoredJSON(`bible_chapters_${now.getFullYear()}`, []));
+    const completed = new Set(readStoredJSON(`bible_plan_${now.getFullYear()}`, []));
+    completed.forEach(day => readingPlan[day - 1]?.chapters.forEach(c => completedChapters.add(chapterKey(c.bookId, c.chapter))));
     readingPlan.forEach((p, idx) => {
-        p.done = completed.has(p.day);
+        p.done = p.chapters.every(c => completedChapters.has(chapterKey(c.bookId, c.chapter)));
         if (idx + 1 === dayOfYear) p.isToday = true;
     });
     todayPlan = readingPlan[dayOfYear - 1];
@@ -1093,8 +1282,19 @@ function initReadingPlan() {
     renderPlanList();
 }
 
+function persistChapterProgress() {
+    const year = new Date().getFullYear();
+    writeStoredJSON(`bible_chapters_${year}`, [...completedChapters]);
+    readingPlan.forEach(p => p.done = p.chapters.every(c => completedChapters.has(chapterKey(c.bookId, c.chapter))));
+    writeStoredJSON(`bible_plan_${year}`, readingPlan.filter(p => p.done).map(p => p.day));
+    updatePlanProgress(todayPlan?.day || 1);
+    updateTodayCard();
+    renderPlanList();
+    updateChapterControls();
+}
+
 function updatePlanProgress(dayOfYear) {
-    const readChapters = readingPlan.filter(p => p.done).reduce((sum, p) => sum + p.chapters.length, 0);
+    const readChapters = completedChapters.size;
     const total = BIBLE_BOOKS.reduce((sum, book) => sum + book.chapters, 0);
     const percent = (readChapters / total * 100).toFixed(1);
     document.getElementById('progressFill').style.width = percent + '%';
@@ -1115,12 +1315,12 @@ function updateTodayCard(now = new Date()) {
 function togglePlanDay(day) {
     const item = readingPlan[day - 1];
     if (!item) return;
-    item.done = !item.done;
-    const year = new Date().getFullYear();
-    localStorage.setItem(`bible_plan_${year}`, JSON.stringify(readingPlan.filter(p => p.done).map(p => p.day)));
-    updatePlanProgress(todayPlan.day);
-    updateTodayCard();
-    renderPlanList();
+    const markDone = !item.done;
+    item.chapters.forEach(c => {
+        const key = chapterKey(c.bookId, c.chapter);
+        markDone ? completedChapters.add(key) : completedChapters.delete(key);
+    });
+    persistChapterProgress();
 }
 
 function renderPlanList() {
@@ -1178,14 +1378,41 @@ function renderSearchResults(results, query, source = '') {
     box.querySelector('.search-close').addEventListener('click', () => box.classList.remove('active'));
     box.querySelectorAll('[data-result]').forEach(el => el.addEventListener('click', () => {
         const item = safeResults[Number(el.dataset.result)];
-        loadChapter(item.bookId, item.chapter);
+        loadChapter(item.bookId, item.chapter, item.verse);
         box.classList.remove('active');
     }));
+}
+
+function parseReference(input) {
+    const raw = String(input || '').trim();
+    const urlStyle = raw.match(/^([a-z0-9]+)\.(\d+)(?:\.(\d+))?$/i);
+    if (urlStyle) {
+        const book = BIBLE_BOOKS.find(b => b.id === urlStyle[1].toLowerCase());
+        const chapter = Number(urlStyle[2]);
+        if (book && chapter >= 1 && chapter <= book.chapters) return { bookId: book.id, chapter, verse: urlStyle[3] || null };
+    }
+    const compact = raw.replace(/\s+/g, '').replace(/第/g, '').replace(/章/g, ':').replace(/节/g, '');
+    const candidates = BIBLE_BOOKS.flatMap(book => [book.name, book.abbrev, book.id].filter(Boolean).map(alias => ({ book, alias: String(alias).replace(/\s+/g, '') }))).sort((a, b) => b.alias.length - a.alias.length);
+    for (const { book, alias } of candidates) {
+        if (!compact.toLowerCase().startsWith(alias.toLowerCase())) continue;
+        const rest = compact.slice(alias.length).replace(/^[:：]/, '');
+        const match = rest.match(/^(\d+)(?:[:：](\d+)(?:[-–—](\d+))?)?$/);
+        if (!match) continue;
+        const chapter = Number(match[1]);
+        if (chapter >= 1 && chapter <= book.chapters) return { bookId: book.id, chapter, verse: match[2] || null, endVerse: match[3] || null };
+    }
+    return null;
 }
 
 async function performSearch() {
     const query = document.getElementById('searchInput').value.trim();
     if (!query) { alert('请输入搜索内容'); return; }
+    const reference = parseReference(query);
+    if (reference) {
+        document.getElementById('searchResults').classList.remove('active');
+        loadChapter(reference.bookId, reference.chapter, reference.verse);
+        return;
+    }
     const button = document.getElementById('searchBtn');
     button.disabled = true;
     button.textContent = '搜索中…';
@@ -1200,6 +1427,48 @@ async function performSearch() {
         button.disabled = false;
         button.textContent = '🔍 搜索';
     }
+}
+
+function updateContinueButton() {
+    const position = readStoredJSON('bible_last_position_v1', null);
+    const button = document.getElementById('continueBtn');
+    const book = position && BIBLE_BOOKS.find(b => b.id === position.bookId);
+    if (!book) { button.classList.remove('available'); return; }
+    button.classList.add('available');
+    button.textContent = `继续：${book.name} 第 ${position.chapter} 章`;
+    button.onclick = () => loadChapter(position.bookId, position.chapter);
+}
+
+async function setupPWA() {
+    if (!('serviceWorker' in navigator)) return;
+    try { await navigator.serviceWorker.register('./sw.js'); } catch { /* normal reading remains available */ }
+    window.addEventListener('beforeinstallprompt', event => {
+        event.preventDefault();
+        deferredInstallPrompt = event;
+        document.getElementById('installBtn').hidden = false;
+    });
+    document.getElementById('installBtn').addEventListener('click', async () => {
+        if (!deferredInstallPrompt) return;
+        deferredInstallPrompt.prompt();
+        await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+        document.getElementById('installBtn').hidden = true;
+    });
+    navigator.serviceWorker.addEventListener('message', event => {
+        if (event.data?.type === 'CACHE_COMPLETE') {
+            const button = document.getElementById('offlineBtn');
+            button.disabled = false;
+            button.textContent = event.data.failed ? `离线缓存完成（${event.data.failed} 项失败）` : '✓ 已可离线阅读';
+        }
+    });
+    document.getElementById('offlineBtn').addEventListener('click', async () => {
+        const button = document.getElementById('offlineBtn');
+        button.disabled = true;
+        button.textContent = '正在下载全本…';
+        const registration = await navigator.serviceWorker.ready;
+        const worker = registration.active || registration.waiting;
+        worker?.postMessage({ type: 'CACHE_URLS', urls: ['./data/search.json', ...BIBLE_BOOKS.map(book => `./data/${book.id}.json`)] });
+    });
 }
 
 // ============================================================
@@ -1264,11 +1533,21 @@ document.addEventListener('DOMContentLoaded', function() {
         if (todayPlan) togglePlanDay(todayPlan.day);
     });
 
+    document.getElementById('prevChapterBtn').addEventListener('click', () => openAdjacentChapter(-1));
+    document.getElementById('nextChapterBtn').addEventListener('click', () => openAdjacentChapter(1));
+    document.getElementById('chapterDoneBtn').addEventListener('click', toggleCurrentChapterDone);
+    document.getElementById('speakChapterBtn').addEventListener('click', () => speakVerses(currentVerses));
+    document.getElementById('stopSpeechBtn').addEventListener('click', stopSpeech);
+    document.getElementById('verseTools').querySelectorAll('[data-verse-action]').forEach(button => button.addEventListener('click', () => handleVerseAction(button.dataset.verseAction)));
+    updateContinueButton();
+    setupPWA();
+
     // 启动
     renderSidebar();
     initReadingPlan();
     const firstToday = todayPlan?.chapters?.[0];
-    loadChapter(firstToday?.bookId || 'gen', firstToday?.chapter || 1);
+    const reference = parseReference(new URLSearchParams(location.search).get('ref'));
+    loadChapter(reference?.bookId || firstToday?.bookId || 'gen', reference?.chapter || firstToday?.chapter || 1, reference?.verse || null);
 });
 </script>
 </body>
