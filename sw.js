@@ -1,6 +1,6 @@
-const CACHE_NAME = 'share-bible-v3';
+const CACHE_NAME = 'share-bible-v4';
 const DATA_CACHE_NAME = 'share-bible-data-v1';
-const CORE_FILES = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
+const CORE_FILES = ['./', './index.html', './reader-speech.js', './manifest.webmanifest', './icon.svg'];
 const INDEX_URL = new URL('./index.html', self.registration.scope).href;
 const DATA_PATH = new URL('./data/', self.registration.scope).pathname;
 

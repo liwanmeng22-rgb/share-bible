@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-app-version="2026.10.19.1">
+<html lang="zh-CN" data-app-version="2026.10.19.2">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -801,6 +801,7 @@
                 <button class="chapter-done" id="chapterDoneBtn">○ 标记本章已读</button>
             </div>
             <div class="search-results" id="searchResults"></div>
+            <p id="speechStatus" role="status" aria-live="polite" style="color:var(--text-secondary);font-size:14px;line-height:1.7;margin:0 0 12px;" hidden></p>
             <div class="verse-text" id="verseDisplay">
                 <div class="loading-container"><div class="sheep">🐑</div><div class="loading-text">AI 正在生成经文<span class="loading-dots"></span></div></div>
             </div>
@@ -904,6 +905,7 @@
     <div class="popup-body" id="popupBody"><p>简介内容...</p></div>
 </div>
 
+<script src="./reader-speech.js"></script>
 <script>
 // ============================================================
 // 圣经书籍列表（66卷）
@@ -990,8 +992,7 @@ let todayPlan = null;
 let currentVerses = [];
 let selectedVerse = null;
 let completedChapters = new Set();
-let speechQueue = [];
-let speechIndex = 0;
+let speechReader = null;
 let deferredInstallPrompt = null;
 let shareVerse = null;
 let shareCardTheme = 'dawn';
@@ -1315,35 +1316,34 @@ async function loadInsights(book, chapter, requestId, force = false) {
 // 加载章节
 // ============================================================
 function stopSpeech() {
-    speechQueue = [];
-    speechIndex = 0;
-    window.speechSynthesis?.cancel();
-    document.querySelectorAll('.verse-block.speaking').forEach(el => el.classList.remove('speaking'));
-    document.getElementById('stopSpeechBtn').hidden = true;
-    document.getElementById('speakChapterBtn').hidden = false;
+    speechReader?.stop();
 }
 
 function speakVerses(verses) {
-    if (!('speechSynthesis' in window) || !verses?.length) { alert('当前浏览器不支持朗读功能'); return; }
-    stopSpeech();
-    speechQueue = [...verses];
-    document.getElementById('stopSpeechBtn').hidden = false;
-    document.getElementById('speakChapterBtn').hidden = true;
-    const next = () => {
-        document.querySelectorAll('.verse-block.speaking').forEach(el => el.classList.remove('speaking'));
-        const verse = speechQueue[speechIndex++];
-        if (!verse) { stopSpeech(); return; }
-        const block = [...document.querySelectorAll('.verse-block')].find(el => el.dataset.verse === String(verse.verse));
-        block?.classList.add('speaking');
-        block?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        const utterance = new SpeechSynthesisUtterance(verse.zh);
-        utterance.lang = 'zh-CN';
-        utterance.rate = Number(localStorage.getItem('bible_speech_rate') || 0.9);
-        utterance.onend = next;
-        utterance.onerror = next;
-        window.speechSynthesis.speak(utterance);
-    };
-    next();
+    if (!speechReader) {
+        speechReader = BibleSpeech.createReader({
+            synth: window.speechSynthesis,
+            Utterance: window.SpeechSynthesisUtterance,
+            status(message) {
+                const node = document.getElementById('speechStatus');
+                node.textContent = message;
+                node.hidden = !message;
+            },
+            controls(playing) {
+                document.getElementById('stopSpeechBtn').hidden = !playing;
+                document.getElementById('speakChapterBtn').hidden = playing;
+            },
+            highlight(verse) {
+                document.querySelectorAll('.verse-block.speaking').forEach(el => el.classList.remove('speaking'));
+                if (verse == null) return;
+                const node = [...document.querySelectorAll('.verse-block')].find(el => el.dataset.verse === String(verse));
+                node?.classList.add('speaking');
+                node?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            },
+            rate: () => localStorage.getItem('bible_speech_rate') || '0.9'
+        });
+    }
+    speechReader.start(verses);
 }
 
 function getAdjacentChapter(offset) {
