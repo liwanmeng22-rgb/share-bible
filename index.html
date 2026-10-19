@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-app-version="2026.10.19.1">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1500,6 +1500,7 @@ function loadNote(bookId, chapter) {
     const key = getNoteKey(bookId, chapter);
     const note = localStorage.getItem(key);
     document.getElementById('noteInput').value = note || '';
+    document.getElementById('noteInput').dataset.loadedKey = key;
     document.getElementById('noteStatus').textContent = note ? '📌 已加载笔记' : '📌 无笔记';
 }
 
@@ -1804,7 +1805,22 @@ function updateContinueButton() {
 
 async function setupPWA() {
     if (!('serviceWorker' in navigator)) return;
-    try { await navigator.serviceWorker.register('./sw.js'); } catch { /* normal reading remains available */ }
+    let reloadingForUpdate = false;
+    const alreadyControlled = Boolean(navigator.serviceWorker.controller);
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!alreadyControlled || reloadingForUpdate) return;
+        reloadingForUpdate = true;
+        try {
+            if (document.getElementById('noteInput').dataset.loadedKey === getNoteKey(currentBookId, currentChapter)) {
+                saveNote(currentBookId, currentChapter);
+            }
+        } catch { return; }
+        location.reload();
+    });
+    try {
+        const registration = await navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' });
+        registration.update().catch(() => {});
+    } catch { /* normal reading remains available */ }
     window.addEventListener('beforeinstallprompt', event => {
         event.preventDefault();
         deferredInstallPrompt = event;
