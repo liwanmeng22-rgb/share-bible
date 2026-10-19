@@ -1,4 +1,4 @@
-const CACHE_NAME = 'share-bible-v1';
+const CACHE_NAME = 'share-bible-v2';
 const CORE_FILES = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', event => {

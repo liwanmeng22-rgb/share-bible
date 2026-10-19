@@ -22,6 +22,7 @@
             --accent-hover: #9e764d;
             --font-size: 17px;
             --line-height: 2.2;
+            --reader-width: 860px;
         }
         [data-theme="cream"] {
             --bg-page: #f5f0eb;
@@ -303,7 +304,10 @@
             line-height: var(--line-height);
             color: var(--text-primary);
             transition: font-size 0.2s, line-height 0.2s;
+            max-width: var(--reader-width);
+            margin: 0 auto;
         }
+        html.hide-english .verse-text .en { display:none; }
         .verse-text .v { color: var(--accent); font-weight: 500; margin-right: 4px; font-size: 0.8em; }
         .verse-text .en {
             color: var(--text-muted);
@@ -655,6 +659,39 @@
         .share-actions button { border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary); border-radius:13px; padding:12px; cursor:pointer; }
         .share-actions .primary { color:#fff; background:var(--accent); border-color:var(--accent); }
         .share-tip { color:var(--text-muted); font-size:12px; line-height:1.7; }
+        .center-modal { display:none; position:fixed; inset:0; z-index:75; background:rgba(28,24,20,.66); backdrop-filter:blur(6px); padding:18px; align-items:center; justify-content:center; }
+        .center-modal.active { display:flex; }
+        .center-dialog { width:min(980px,100%); max-height:92vh; overflow:auto; background:var(--bg-app); color:var(--text-primary); border-radius:24px; border:1px solid var(--border-color); box-shadow:0 24px 70px rgba(0,0,0,.3); padding:22px; }
+        .center-head { display:flex; align-items:center; gap:12px; margin-bottom:16px; position:sticky; top:-22px; z-index:2; background:var(--bg-app); padding:14px 0 10px; }
+        .center-head h3 { margin:0; font-size:22px; }
+        .center-head p { margin:0; color:var(--text-muted); font-size:12px; }
+        .center-head .spacer { flex:1; }
+        .center-close { border:0; background:var(--bg-card); color:var(--text-primary); width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:22px; }
+        .center-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:18px; }
+        .center-stat { background:var(--bg-card); border:1px solid var(--border-color); border-radius:15px; padding:14px; }
+        .center-stat strong { display:block; color:var(--accent); font-size:21px; }
+        .center-stat span { color:var(--text-muted); font-size:12px; }
+        .center-tabs { display:flex; gap:7px; overflow:auto; margin-bottom:14px; }
+        .center-tabs button { border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-secondary); border-radius:22px; padding:8px 13px; cursor:pointer; white-space:nowrap; }
+        .center-tabs button.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+        .center-list { display:grid; gap:9px; }
+        .center-item { display:flex; align-items:flex-start; gap:10px; border:1px solid var(--border-color); background:var(--bg-card); border-radius:14px; padding:12px 14px; cursor:pointer; }
+        .center-item:hover { border-color:var(--accent); }
+        .center-item .item-main { flex:1; min-width:0; }
+        .center-item strong { display:block; margin-bottom:4px; }
+        .center-item small { color:var(--text-muted); line-height:1.55; }
+        .center-empty { text-align:center; padding:36px 15px; color:var(--text-muted); }
+        .backup-actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:18px; padding-top:15px; border-top:1px solid var(--border-color); }
+        .backup-actions button { border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-primary); border-radius:12px; padding:9px 13px; cursor:pointer; }
+        .daily-reading-list { display:grid; gap:18px; }
+        .daily-reading-chapter { border:1px solid var(--border-color); border-radius:18px; padding:18px; background:var(--bg-card); }
+        .daily-reading-chapter.done { border-color:#5d8d69; }
+        .daily-chapter-head { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+        .daily-chapter-head h4 { margin:0; flex:1; }
+        .daily-chapter-head button { border:0; background:var(--bg-app); color:var(--accent); border-radius:18px; padding:7px 10px; cursor:pointer; }
+        .daily-verses { line-height:1.85; }
+        .daily-verses p { margin:0 0 7px; }
+        .daily-verses .n { color:var(--accent); font-size:.78em; margin-right:5px; }
         .continue-btn { display:none; }
         .continue-btn.available { display:inline-block; }
         @media (max-width: 860px) {
@@ -670,6 +707,10 @@
             .share-dialog { padding:15px; }
             .share-layout { grid-template-columns:1fr; }
             #shareCanvas { max-width:360px; margin:auto; }
+            .center-modal { padding:0; }
+            .center-dialog { min-height:100vh; max-height:100vh; border-radius:0; padding:16px; }
+            .center-head { top:-16px; }
+            .center-stats { grid-template-columns:repeat(2,1fr); }
         }
     </style>
 </head>
@@ -693,6 +734,24 @@
                 <option value="gray">高级灰</option>
                 <option value="dark">暗夜</option>
             </select>
+            <select id="lineHeightSelect" aria-label="行距">
+                <option value="1.75">紧凑</option>
+                <option value="2.2" selected>舒适</option>
+                <option value="2.55">宽松</option>
+            </select>
+            <select id="readerWidthSelect" aria-label="正文宽度">
+                <option value="720">窄版</option>
+                <option value="860" selected>标准宽度</option>
+                <option value="1040">宽版</option>
+            </select>
+            <select id="speechRateSelect" aria-label="朗读速度">
+                <option value="0.8">朗读 0.8×</option>
+                <option value="0.9" selected>朗读 0.9×</option>
+                <option value="1">朗读 1.0×</option>
+                <option value="1.2">朗读 1.2×</option>
+            </select>
+            <button class="utility-btn" id="englishToggleBtn">隐藏英文</button>
+            <button class="utility-btn" id="readingCenterBtn">我的阅读</button>
             <button class="utility-btn" id="installBtn" hidden>安装应用</button>
             <button class="utility-btn" id="offlineBtn">离线缓存</button>
         </div>
@@ -701,8 +760,11 @@
     <div class="search-bar">
         <input type="text" id="searchInput" placeholder="搜索经文、人名、地名..." />
         <select id="searchType">
-            <option value="text">全本经文</option>
+            <option value="all">全本经文</option>
+            <option value="old">仅旧约</option>
+            <option value="new">仅新约</option>
         </select>
+        <select id="searchBook" aria-label="限定书卷"><option value="">全部书卷</option></select>
         <button id="searchBtn">🔍 搜索</button>
     </div>
     <div class="progress-bar">
@@ -721,6 +783,7 @@
         </div>
         <div class="daily-actions">
             <button class="primary" id="startTodayBtn">开始今日阅读</button>
+            <button id="continuousTodayBtn">连续阅读今日内容</button>
             <button class="continue-btn" id="continueBtn">继续上次阅读</button>
             <button id="completeTodayBtn">标记今日完成</button>
         </div>
@@ -785,6 +848,28 @@
     <button data-verse-action="speak">朗读</button>
     <button data-verse-action="share">生成分享卡片</button>
     <button data-verse-action="close">关闭</button>
+</div>
+
+<div class="center-modal" id="readingCenterModal" role="dialog" aria-modal="true" aria-labelledby="readingCenterTitle">
+    <div class="center-dialog">
+        <div class="center-head"><div><h3 id="readingCenterTitle">我的阅读</h3><p>进度、收藏、笔记与最近阅读都保存在本设备</p></div><span class="spacer"></span><button class="center-close" data-close-center="readingCenterModal">×</button></div>
+        <div class="center-stats" id="readingCenterStats"></div>
+        <div class="center-tabs" id="readingCenterTabs">
+            <button class="active" data-center-tab="recent">最近阅读</button>
+            <button data-center-tab="favorites">收藏经节</button>
+            <button data-center-tab="highlights">高亮经节</button>
+            <button data-center-tab="notes">我的笔记</button>
+        </div>
+        <div class="center-list" id="readingCenterList"></div>
+        <div class="backup-actions"><button id="exportDataBtn">导出阅读备份</button><button id="importDataBtn">导入并合并</button><input id="importDataInput" type="file" accept="application/json" hidden></div>
+    </div>
+</div>
+
+<div class="center-modal" id="dailyReaderModal" role="dialog" aria-modal="true" aria-labelledby="dailyReaderTitle">
+    <div class="center-dialog">
+        <div class="center-head"><div><h3 id="dailyReaderTitle">今日连续阅读</h3><p id="dailyReaderSummary">正在准备今日内容…</p></div><span class="spacer"></span><button class="center-close" data-close-center="dailyReaderModal">×</button></div>
+        <div class="daily-reading-list" id="dailyReadingList"></div>
+    </div>
 </div>
 
 <div class="share-modal" id="shareModal" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
@@ -922,6 +1007,25 @@ function writeStoredJSON(key, value) {
 
 function chapterKey(bookId, chapter) { return `${bookId}.${chapter}`; }
 function verseKey(bookId, chapter, verse) { return `${bookId}.${chapter}.${verse}`; }
+
+function parseVerseKey(key) {
+    const [bookId, chapter, ...verseParts] = String(key).split('.');
+    return { bookId, chapter:Number(chapter), verse:verseParts.join('.') };
+}
+
+function rememberChapter(bookId, chapter) {
+    const recent = readStoredJSON('bible_recent_v1', []).filter(item => !(item.bookId === bookId && Number(item.chapter) === Number(chapter)));
+    recent.unshift({ bookId, chapter:Number(chapter), openedAt:Date.now() });
+    writeStoredJSON('bible_recent_v1', recent.slice(0, 20));
+}
+
+async function getVerseByKey(key) {
+    const parsed = parseVerseKey(key);
+    const verses = await getLocalChapter(parsed.bookId, parsed.chapter);
+    const verse = verses?.find(item => String(item.verse) === String(parsed.verse));
+    const book = BIBLE_BOOKS.find(item => item.id === parsed.bookId);
+    return verse && book ? { ...parsed, book, data:verse, key } : null;
+}
 
 function escapeHTML(value) {
     return String(value ?? '').replace(/[&<>'"]/g, char => ({
@@ -1234,7 +1338,7 @@ function speakVerses(verses) {
         block?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         const utterance = new SpeechSynthesisUtterance(verse.zh);
         utterance.lang = 'zh-CN';
-        utterance.rate = 0.9;
+        utterance.rate = Number(localStorage.getItem('bible_speech_rate') || 0.9);
         utterance.onend = next;
         utterance.onerror = next;
         window.speechSynthesis.speak(utterance);
@@ -1296,6 +1400,7 @@ async function loadChapter(bookId, chapter, targetVerse = null) {
         renderVerses(verses, display);
         updateDailyVerse(book, chapter, verses);
         writeStoredJSON('bible_last_position_v1', { bookId, chapter });
+        rememberChapter(bookId, chapter);
         updateContinueButton();
         updateChapterControls();
         history.replaceState(null, '', `${location.pathname}?ref=${bookId}.${chapter}${targetVerse ? `.${targetVerse}` : ''}`);
@@ -1326,7 +1431,7 @@ async function askQuestion() {
             2. 不涉及传教或信仰劝导
             3. 基于圣经文本和学术研究回答
             4. 如果问题与当前章节（${currentBookId} 第${currentChapter}章）相关，请结合该章节内容
-            
+
             问题：${question}
         `;
 
@@ -1510,6 +1615,93 @@ function renderPlanList() {
 }
 
 // ============================================================
+// 我的阅读与今日连续阅读
+// ============================================================
+function closeCenterModal(id) { document.getElementById(id)?.classList.remove('active'); }
+
+function openReadingCenter(tab = 'recent') {
+    document.getElementById('readingCenterModal').classList.add('active');
+    renderReadingCenter(tab);
+}
+
+async function renderReadingCenter(tab = 'recent') {
+    const favorites = readStoredJSON('bible_favorites_v1', []);
+    const highlights = readStoredJSON('bible_highlights_v1', []);
+    const verseNotes = readStoredJSON('bible_verse_notes_v1', {});
+    const recent = readStoredJSON('bible_recent_v1', []);
+    const chapterNotes = Object.keys(localStorage).filter(key => key.startsWith('note_') && localStorage.getItem(key)?.trim());
+    const total = BIBLE_BOOKS.reduce((sum, book) => sum + book.chapters, 0);
+    const percent = Math.round(completedChapters.size / total * 100);
+    document.getElementById('readingCenterStats').innerHTML = `
+        <div class="center-stat"><strong>${completedChapters.size}</strong><span>已读章节 · ${percent}%</span></div>
+        <div class="center-stat"><strong>${favorites.length}</strong><span>收藏经节</span></div>
+        <div class="center-stat"><strong>${highlights.length}</strong><span>高亮经节</span></div>
+        <div class="center-stat"><strong>${Object.keys(verseNotes).length + chapterNotes.length}</strong><span>阅读笔记</span></div>`;
+    document.querySelectorAll('[data-center-tab]').forEach(button => button.classList.toggle('active', button.dataset.centerTab === tab));
+    const list = document.getElementById('readingCenterList');
+    list.innerHTML = '<div class="center-empty">正在整理阅读记录…</div>';
+    if (tab === 'recent') {
+        list.innerHTML = recent.length ? recent.map(item => {
+            const book = BIBLE_BOOKS.find(b => b.id === item.bookId);
+            return `<div class="center-item" data-open-ref="${item.bookId}.${item.chapter}"><div class="item-main"><strong>${escapeHTML(book?.name || item.bookId)} 第 ${item.chapter} 章</strong><small>${new Date(item.openedAt).toLocaleString('zh-CN')}</small></div><span>继续阅读 →</span></div>`;
+        }).join('') : '<div class="center-empty">开始阅读后，这里会记录最近打开的章节。</div>';
+    } else if (tab === 'favorites' || tab === 'highlights') {
+        const keys = tab === 'favorites' ? favorites : highlights;
+        const records = (await Promise.all(keys.slice(0, 80).map(getVerseByKey))).filter(Boolean);
+        list.innerHTML = records.length ? records.map(item => `<div class="center-item" data-open-ref="${item.bookId}.${item.chapter}.${item.verse}"><div class="item-main"><strong>${item.book.name} ${item.chapter}:${escapeHTML(item.verse)}</strong><small>${escapeHTML(item.data.zh)}</small></div><span>打开 →</span></div>`).join('') : `<div class="center-empty">还没有${tab === 'favorites' ? '收藏' : '高亮'}经节。</div>`;
+    } else {
+        const verseRecords = (await Promise.all(Object.keys(verseNotes).map(getVerseByKey))).filter(Boolean).map(item => ({ ref:`${item.book.name} ${item.chapter}:${item.verse}`, text:verseNotes[item.key], open:`${item.bookId}.${item.chapter}.${item.verse}` }));
+        const chapterRecords = chapterNotes.map(key => {
+            const match = key.match(/^note_(.+)_(\d+)$/); const book = match && BIBLE_BOOKS.find(b => b.id === match[1]);
+            return match ? { ref:`${book?.name || match[1]} 第 ${match[2]} 章`, text:localStorage.getItem(key), open:`${match[1]}.${match[2]}` } : null;
+        }).filter(Boolean);
+        const notes = [...verseRecords, ...chapterRecords];
+        list.innerHTML = notes.length ? notes.map(item => `<div class="center-item" data-open-ref="${item.open}"><div class="item-main"><strong>${escapeHTML(item.ref)}</strong><small>${escapeHTML(item.text)}</small></div><span>打开 →</span></div>`).join('') : '<div class="center-empty">还没有笔记。点击经节可写经节笔记，章节底部可写整章笔记。</div>';
+    }
+    list.querySelectorAll('[data-open-ref]').forEach(item => item.addEventListener('click', () => {
+        const ref = parseReference(item.dataset.openRef); if (ref) loadChapter(ref.bookId, ref.chapter, ref.verse); closeCenterModal('readingCenterModal');
+    }));
+}
+
+function exportReadingData() {
+    const data = { version:1, exportedAt:new Date().toISOString(), storage:{} };
+    Object.keys(localStorage).filter(key => key.startsWith('bible_') || key.startsWith('note_')).forEach(key => data.storage[key] = localStorage.getItem(key));
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+    const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `溪水旁-阅读备份-${new Date().toISOString().slice(0,10)}.json`; link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+}
+
+async function importReadingData(file) {
+    try {
+        const data = JSON.parse(await file.text());
+        if (!data?.storage || typeof data.storage !== 'object') throw new Error('文件格式不正确');
+        Object.entries(data.storage).forEach(([key, value]) => { if (key.startsWith('bible_') || key.startsWith('note_')) localStorage.setItem(key, value); });
+        alert('阅读记录已导入，将刷新页面应用数据。'); location.reload();
+    } catch (error) { alert(`导入失败：${error.message}`); }
+}
+
+async function openContinuousToday() {
+    if (!todayPlan) return;
+    const modal = document.getElementById('dailyReaderModal');
+    const list = document.getElementById('dailyReadingList');
+    modal.classList.add('active');
+    document.getElementById('dailyReaderSummary').textContent = `第 ${todayPlan.day} 天 · ${todayPlan.chapters.length} 章 · 已完成 ${todayPlan.chapters.filter(c => completedChapters.has(chapterKey(c.bookId,c.chapter))).length} 章`;
+    list.innerHTML = '<div class="center-empty">正在读取今日经文…</div>';
+    const sections = await Promise.all(todayPlan.chapters.map(async chapter => ({ chapter, verses:await getLocalChapter(chapter.bookId, chapter.chapter) })));
+    list.innerHTML = sections.map(({ chapter, verses }) => {
+        const done = completedChapters.has(chapterKey(chapter.bookId, chapter.chapter));
+        return `<section class="daily-reading-chapter ${done ? 'done' : ''}" data-daily-chapter="${chapter.bookId}.${chapter.chapter}"><div class="daily-chapter-head"><h4>${escapeHTML(chapter.bookName)} 第 ${chapter.chapter} 章</h4><button data-open-daily>单章阅读</button><button data-toggle-daily>${done ? '✓ 已读' : '标记已读'}</button></div><div class="daily-verses">${verses.map(v => `<p><span class="n">${escapeHTML(v.verse)}</span>${escapeHTML(v.zh)}</p>`).join('')}</div></section>`;
+    }).join('');
+    list.querySelectorAll('[data-daily-chapter]').forEach(section => {
+        const ref = parseReference(section.dataset.dailyChapter);
+        section.querySelector('[data-open-daily]').addEventListener('click', () => { loadChapter(ref.bookId, ref.chapter); closeCenterModal('dailyReaderModal'); });
+        section.querySelector('[data-toggle-daily]').addEventListener('click', event => {
+            const key = chapterKey(ref.bookId, ref.chapter); completedChapters.has(key) ? completedChapters.delete(key) : completedChapters.add(key); persistChapterProgress(); section.classList.toggle('done', completedChapters.has(key)); event.currentTarget.textContent = completedChapters.has(key) ? '✓ 已读' : '标记已读';
+        });
+    });
+}
+
+// ============================================================
 // 搜索
 // ============================================================
 let searchIndexPromise = null;
@@ -1523,11 +1715,18 @@ async function findLocalResults(query) {
     }
     const index = await searchIndexPromise;
     const results = [];
+    const terms = query.split(/\s+/).map(term => term.trim()).filter(Boolean);
+    const testament = document.getElementById('searchType').value;
+    const selectedBook = document.getElementById('searchBook').value;
     for (const [bookId, chapter, verse, zh] of index) {
-        if (!zh.includes(query)) continue;
+        if (selectedBook && bookId !== selectedBook) continue;
+        const isNewTestament = NT_BOOKS.some(book => book.id === bookId);
+        if (testament === 'old' && isNewTestament) continue;
+        if (testament === 'new' && !isNewTestament) continue;
+        if (!terms.every(term => zh.includes(term))) continue;
         const book = BIBLE_BOOKS.find(item => item.id === bookId);
         results.push({ bookId, chapter, verse, ref: `${book?.name || bookId} ${chapter}:${verse}`, zh });
-        if (results.length >= 30) break;
+        if (results.length >= 60) break;
     }
     return results;
 }
@@ -1583,7 +1782,7 @@ async function performSearch() {
     renderSearchResults([], query, '正在检索全本圣经…');
     try {
         const results = await findLocalResults(query);
-        renderSearchResults(results, query, '全本《新标点和合本》精确检索');
+        renderSearchResults(results, query, '本地经文库检索 · 支持空格分隔多个关键词');
     } catch (error) {
         searchIndexPromise = null;
         renderSearchResults([], query, '搜索索引暂时无法读取，请刷新页面后重试。');
@@ -1642,10 +1841,46 @@ document.addEventListener('DOMContentLoaded', function() {
     // 字号
     const slider = document.getElementById('fontSizeSlider');
     const label = document.getElementById('fontSizeLabel');
+    const savedFontSize = localStorage.getItem('bible_font_size') || '17';
+    slider.value = savedFontSize;
+    label.textContent = savedFontSize;
+    document.documentElement.style.setProperty('--font-size', savedFontSize + 'px');
     slider.addEventListener('input', () => {
         const size = parseInt(slider.value);
         label.textContent = size;
         document.documentElement.style.setProperty('--font-size', size + 'px');
+        localStorage.setItem('bible_font_size', String(size));
+    });
+
+    const lineHeightSelect = document.getElementById('lineHeightSelect');
+    lineHeightSelect.value = localStorage.getItem('bible_line_height') || '2.2';
+    document.documentElement.style.setProperty('--line-height', lineHeightSelect.value);
+    lineHeightSelect.addEventListener('change', () => {
+        document.documentElement.style.setProperty('--line-height', lineHeightSelect.value);
+        localStorage.setItem('bible_line_height', lineHeightSelect.value);
+    });
+
+    const readerWidthSelect = document.getElementById('readerWidthSelect');
+    readerWidthSelect.value = localStorage.getItem('bible_reader_width') || '860';
+    document.documentElement.style.setProperty('--reader-width', readerWidthSelect.value + 'px');
+    readerWidthSelect.addEventListener('change', () => {
+        document.documentElement.style.setProperty('--reader-width', readerWidthSelect.value + 'px');
+        localStorage.setItem('bible_reader_width', readerWidthSelect.value);
+    });
+
+    const speechRateSelect = document.getElementById('speechRateSelect');
+    speechRateSelect.value = localStorage.getItem('bible_speech_rate') || '0.9';
+    speechRateSelect.addEventListener('change', () => localStorage.setItem('bible_speech_rate', speechRateSelect.value));
+
+    const englishToggleBtn = document.getElementById('englishToggleBtn');
+    const showEnglish = localStorage.getItem('bible_show_english') !== 'false';
+    document.documentElement.classList.toggle('hide-english', !showEnglish);
+    englishToggleBtn.textContent = showEnglish ? '隐藏英文' : '显示英文';
+    englishToggleBtn.addEventListener('click', () => {
+        const willShow = document.documentElement.classList.contains('hide-english');
+        document.documentElement.classList.toggle('hide-english', !willShow);
+        localStorage.setItem('bible_show_english', String(willShow));
+        englishToggleBtn.textContent = willShow ? '隐藏英文' : '显示英文';
     });
 
     // 主题
@@ -1660,6 +1895,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 搜索
+    const searchBook = document.getElementById('searchBook');
+    searchBook.innerHTML += BIBLE_BOOKS.map(book => `<option value="${book.id}">${book.name}</option>`).join('');
     document.getElementById('searchBtn').addEventListener('click', performSearch);
     document.getElementById('searchInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') performSearch(); });
 
@@ -1696,6 +1933,14 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('completeTodayBtn').addEventListener('click', () => {
         if (todayPlan) togglePlanDay(todayPlan.day);
     });
+    document.getElementById('continuousTodayBtn').addEventListener('click', openContinuousToday);
+    document.getElementById('readingCenterBtn').addEventListener('click', () => openReadingCenter());
+    document.querySelectorAll('[data-close-center]').forEach(button => button.addEventListener('click', () => closeCenterModal(button.dataset.closeCenter)));
+    document.querySelectorAll('.center-modal').forEach(modal => modal.addEventListener('click', event => { if (event.target === modal) closeCenterModal(modal.id); }));
+    document.querySelectorAll('[data-center-tab]').forEach(button => button.addEventListener('click', () => renderReadingCenter(button.dataset.centerTab)));
+    document.getElementById('exportDataBtn').addEventListener('click', exportReadingData);
+    document.getElementById('importDataBtn').addEventListener('click', () => document.getElementById('importDataInput').click());
+    document.getElementById('importDataInput').addEventListener('change', event => { const file = event.target.files?.[0]; if (file) importReadingData(file); });
 
     document.getElementById('prevChapterBtn').addEventListener('click', () => openAdjacentChapter(-1));
     document.getElementById('nextChapterBtn').addEventListener('click', () => openAdjacentChapter(1));
@@ -1705,7 +1950,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('verseTools').querySelectorAll('[data-verse-action]').forEach(button => button.addEventListener('click', () => handleVerseAction(button.dataset.verseAction)));
     document.getElementById('shareCloseBtn').addEventListener('click', closeShareCard);
     document.getElementById('shareModal').addEventListener('click', event => { if (event.target.id === 'shareModal') closeShareCard(); });
-    document.addEventListener('keydown', event => { if (event.key === 'Escape') closeShareCard(); });
+    document.addEventListener('keydown', event => { if (event.key === 'Escape') { closeShareCard(); closeCenterModal('readingCenterModal'); closeCenterModal('dailyReaderModal'); } });
     document.querySelectorAll('[data-card-theme]').forEach(button => button.addEventListener('click', () => {
         shareCardTheme = button.dataset.cardTheme;
         document.querySelectorAll('[data-card-theme]').forEach(item => item.classList.toggle('active', item === button));
